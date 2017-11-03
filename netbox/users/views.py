@@ -1,5 +1,7 @@
 from __future__ import unicode_literals
 
+from django.conf import settings
+
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -25,7 +27,14 @@ from .models import Token
 class LoginView(View):
     template_name = 'login.html'
 
+    def _redirect_for_saml(self, request):
+        return HttpResponseRedirect('{}?next={}'.format(settings.LOGIN_URL,
+                                                        request.path_info))
+
     def get(self, request):
+        if settings.SAML_ENABLED and settings.SAML_REQUIRED:
+            return self._redirect_for_saml(request)
+
         form = LoginForm(request)
 
         return render(request, self.template_name, {
@@ -33,6 +42,9 @@ class LoginView(View):
         })
 
     def post(self, request):
+        if settings.SAML_ENABLED and settings.SAML_REQUIRED:
+            return self._redirect_for_saml(request)
+
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
 
@@ -55,10 +67,18 @@ class LoginView(View):
 class LogoutView(View):
 
     def get(self, request):
+
         auth_logout(request)
         messages.info(request, "You have logged out.")
 
-        return HttpResponseRedirect(reverse('home'))
+        # In order for a custom SAML on_logout URL to be relevant, login must be required,
+        # SAML must be enabled and the on_logout URL must be set.
+        if settings.SAML_ENABLED and settings.SAML_ON_LOGOUT_URL and settings.LOGIN_REQUIRED:
+            redirect_to = settings.SAML_ON_LOGOUT_URL
+        else:
+            redirect_to = reverse('home')
+
+        return HttpResponseRedirect(redirect_to)
 
 
 #

@@ -62,6 +62,11 @@ if settings.DEBUG:
         url(r'^__debug__/', include(debug_toolbar.urls)),
     ]
 
+if settings.SAML_ENABLED:
+    _patterns += [
+        url(r'^saml2/', include('djangosaml2.urls')),
+    ]
+
 # Prepend BASE_PATH
 urlpatterns = [
     url(r'^{}'.format(settings.BASE_PATH), include(_patterns))

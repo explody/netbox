@@ -10,3 +10,7 @@
 fabfile.py
 *.swp
 gunicorn_config.py
+
+# Exclude potentially sensitive SAML data
+netbox/netbox/saml/*xml
+netbox/netbox/saml/*pem

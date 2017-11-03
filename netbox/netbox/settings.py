@@ -12,7 +12,6 @@ except ImportError:
         "Configuration file is not present. Please define netbox/netbox/configuration.py per the documentation."
     )
 
-
 VERSION = '2.2.5-dev'
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -63,6 +62,10 @@ TIME_ZONE = getattr(configuration, 'TIME_ZONE', 'UTC')
 
 CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 # Attempt to import LDAP configuration if it has been defined
 LDAP_IGNORE_CERT_ERRORS = False
 try:
@@ -77,10 +80,8 @@ if LDAP_CONFIGURED:
         import ldap
         import django_auth_ldap
         # Prepend LDAPBackend to the default ModelBackend
-        AUTHENTICATION_BACKENDS = [
-            'django_auth_ldap.backend.LDAPBackend',
-            'django.contrib.auth.backends.ModelBackend',
-        ]
+        AUTHENTICATION_BACKENDS.insert(0, 'django_auth_ldap.backend.LDAPBackend')
+
         # Optionally disable strict certificate checking
         if LDAP_IGNORE_CERT_ERRORS:
             ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
@@ -93,6 +94,31 @@ if LDAP_CONFIGURED:
             "LDAP authentication has been configured, but django-auth-ldap is not installed. You can remove "
             "netbox/ldap_config.py to disable LDAP."
         )
+
+try:
+    from .saml.config import SAML_ENABLED, SAML_CONFIG, SAML_ON_LOGOUT_URL
+except ImportError:
+    SAML_ENABLED = False
+
+if SAML_ENABLED:
+    # Prepend the SAML backend if SAML is configured
+    AUTHENTICATION_BACKENDS.insert(0, 'djangosaml2.backends.Saml2Backend')
+
+    # Various SAML options
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+    # Attributes, including for usernames, are highly customizable.  In the
+    # simplest setup, your IDP will either need to pass 'uid' as an attribute,
+    # or set this to True to use the default 'NameId'. For deeper customization
+    # see the pysaml2 and djangosaml2 docs
+    SAML_USE_NAME_ID_AS_USERNAME = True
+
+    # SAML Authentication URL
+    LOGIN_URL = '/{}saml2/login/'.format(BASE_PATH)
+
+else:
+    # Default authentication URL
+    LOGIN_URL = '/{}login/'.format(BASE_PATH)
 
 # Database
 configuration.DATABASE.update({'ENGINE': 'django.db.backends.postgresql'})
@@ -134,6 +160,8 @@ INSTALLED_APPS = (
     'users',
     'utilities',
     'virtualization',
+    # 'djangosaml2'  # Uncomment for testing.
+                     # See https://github.com/knaperek/djangosaml2/#changes-in-the-settings-py-file
 )
 
 # Middleware
@@ -199,9 +227,6 @@ DATA_UPLOAD_MAX_NUMBER_FIELDS = None
 MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
-
-# Authentication URLs
-LOGIN_URL = '/{}login/'.format(BASE_PATH)
 
 # Secrets
 SECRETS_MIN_PUBKEY_SIZE = 2048

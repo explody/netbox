@@ -1,0 +1,2 @@
+pysaml2>=4.4.0
+djangosaml2>=0.16.10
