@@ -35,7 +35,14 @@ Then, install the xmlsec1 program.  The package proivding this program is differ
 
 ### Configuration
 
-Once the dependencies are installed, edit `netbox/netbox/saml/config.py`.  At minimum, you must modify the "Basic Settings" at the top of this file to match your environment.  However,  the full pysaml2 configuration is available in the SAML_CONFIG dictionary.  Please refer to the djangosaml2 and pysaml2 docs for details on advanced configurations.
+Once the dependencies are installed, copy the sample config to the `config.py`.
+
+```
+# cd /path/to/netbox
+# cp netbox/netbox/saml/config.example.py netbox/netbox/saml/config.py
+```
+
+At minimum, you must modify the "Basic Settings" at the top of this file to match your environment.  However,  the full pysaml2 configuration is available via the SAML_CONFIG dictionary.  Please refer to the djangosaml2 and pysaml2 docs for full detail on configuration options.
 
 ##### Basic Settings
 
