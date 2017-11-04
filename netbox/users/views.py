@@ -19,7 +19,6 @@ from utilities.forms import ConfirmationForm
 from .forms import LoginForm, PasswordChangeForm, TokenForm
 from .models import Token
 
-
 #
 # Login/logout
 #
@@ -28,13 +27,11 @@ class LoginView(View):
     template_name = 'login.html'
 
     def _redirect_for_saml(self, request):
-        return HttpResponseRedirect('{}?next={}'.format(settings.LOGIN_URL,
-                                                        request.path_info))
+        return HttpResponseRedirect(settings.LOGIN_URL)
 
     def get(self, request):
         if settings.SAML_ENABLED and settings.SAML_REQUIRED:
             return self._redirect_for_saml(request)
-
         form = LoginForm(request)
 
         return render(request, self.template_name, {
@@ -69,11 +66,15 @@ class LogoutView(View):
     def get(self, request):
 
         auth_logout(request)
-        messages.info(request, "You have logged out.")
 
-        # In order for a custom SAML on_logout URL to be relevant, login must be required,
-        # SAML must be enabled and the on_logout URL must be set.
-        if settings.SAML_ENABLED and settings.SAML_ON_LOGOUT_URL and settings.LOGIN_REQUIRED:
+        # Don't display this if SAML is required, as the logout landing page is unlikely to be
+        # a netbox page
+        if not settings.SAML_REQUIRED:
+            messages.info(request, "You have logged out.")
+
+        # In order for a custom SAML on_logout URL to be relevant,
+        # SAML must be enabled, required, and the on_logout URL must be set.
+        if settings.SAML_ENABLED and settings.SAML_ON_LOGOUT_URL and settings.SAML_REQUIRED:
             redirect_to = settings.SAML_ON_LOGOUT_URL
         else:
             redirect_to = reverse('home')

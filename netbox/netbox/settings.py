@@ -96,9 +96,16 @@ if LDAP_CONFIGURED:
         )
 
 try:
-    from .saml.config import SAML_ENABLED, SAML_CONFIG, SAML_ON_LOGOUT_URL
+    from .saml.config import SAML_ENABLED, SAML_REQUIRED, SAML_CONFIG, SAML_ON_LOGOUT_URL
 except ImportError:
     SAML_ENABLED = False
+    SAML_REQUIRED = False
+
+# Default authentication URL
+LOGIN_URL = '/{}login/'.format(BASE_PATH)
+
+# Default landing page after authentication
+LOGIN_REDIRECT_URL = '/'
 
 if SAML_ENABLED:
     # Prepend the SAML backend if SAML is configured
@@ -113,12 +120,10 @@ if SAML_ENABLED:
     # see the pysaml2 and djangosaml2 docs
     SAML_USE_NAME_ID_AS_USERNAME = True
 
-    # SAML Authentication URL
-    LOGIN_URL = '/{}saml2/login/'.format(BASE_PATH)
+    # If SAML is required, overwrite the LOGIN_URL
+    if SAML_REQUIRED:
+        LOGIN_URL = '/{}saml2/login/'.format(BASE_PATH)
 
-else:
-    # Default authentication URL
-    LOGIN_URL = '/{}login/'.format(BASE_PATH)
 
 # Database
 configuration.DATABASE.update({'ENGINE': 'django.db.backends.postgresql'})
