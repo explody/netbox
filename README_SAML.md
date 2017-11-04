@@ -1,4 +1,4 @@
-# SAML 2.0 for Netbox
+# SAML 2.0 for NetBox
 
 [TOC]
 
@@ -10,7 +10,7 @@ This doc covers only the most basic setup of a SAML Service Provider (SP, e.g. n
 
 SAML authentication support is provided via [djangosaml2](https://github.com/knaperek/djangosaml2/) and [pysaml2](http://pysaml2.readthedocs.io/en/latest/).
 
-To set up basic SAML support for Netbox, begin by installing pysaml2, djangosaml2 and xmlsec1
+To set up basic SAML support for NetBox, begin by installing pysaml2, djangosaml2 and xmlsec1
 
 ```
 # cd /path/to/netbox
@@ -53,7 +53,7 @@ SAML_ENABLED = False
 # Set to true to require SAML login. Use with LOGIN_REQUIRED to require SAML login for all access.
 SAML_REQUIRED = False
 
-# The base URL of your Netbox installation.
+# The base URL of your NetBox installation.
 NETBOX_BASE = "http://localhost:8080"
 
 SAML_IDP_ENTITY_ID = 'http://idp.domain.com/metadata'     # Commonly the URL for the IDP metadata
