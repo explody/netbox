@@ -3,7 +3,6 @@ import netaddr
 
 from django.conf import settings
 from django.contrib.contenttypes.fields import GenericRelation
-from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -460,6 +459,9 @@ class IPAddress(CreatedUpdatedModel, CustomFieldModel):
 
     def get_status_class(self):
         return STATUS_CHOICE_CLASSES[self.status]
+
+    def get_role_class(self):
+        return ROLE_CHOICE_CLASSES[self.role]
 
 
 @python_2_unicode_compatible
