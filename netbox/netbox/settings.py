@@ -203,6 +203,7 @@ MESSAGE_TAGS = {
 
 # Authentication URLs
 LOGIN_URL = '/{}login/'.format(BASE_PATH)
+LOGOUT_URL = '/{}logout/'.format(BASE_PATH)
 
 # Secrets
 SECRETS_MIN_PUBKEY_SIZE = 2048
