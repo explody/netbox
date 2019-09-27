@@ -95,73 +95,6 @@ TIME_ZONE = getattr(configuration, 'TIME_ZONE', 'UTC')
 WEBHOOKS_ENABLED = getattr(configuration, 'WEBHOOKS_ENABLED', False)
 
 
-<<<<<<< HEAD
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-]
-
-# Attempt to import LDAP configuration if it has been defined
-LDAP_IGNORE_CERT_ERRORS = False
-try:
-    from netbox.ldap_config import *
-    LDAP_CONFIGURED = True
-except ImportError:
-    LDAP_CONFIGURED = False
-
-# LDAP configuration (optional)
-if LDAP_CONFIGURED:
-    try:
-        import ldap
-        import django_auth_ldap
-        # Prepend LDAPBackend to the default ModelBackend
-        AUTHENTICATION_BACKENDS.insert(0, 'django_auth_ldap.backend.LDAPBackend')
-
-        # Optionally disable strict certificate checking
-        if LDAP_IGNORE_CERT_ERRORS:
-            ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
-        # Enable logging for django_auth_ldap
-        ldap_logger = logging.getLogger('django_auth_ldap')
-        ldap_logger.addHandler(logging.StreamHandler())
-        ldap_logger.setLevel(logging.DEBUG)
-    except ImportError:
-        raise ImproperlyConfigured(
-            "LDAP authentication has been configured, but django-auth-ldap is not installed. You can remove "
-            "netbox/ldap_config.py to disable LDAP."
-        )
-
-try:
-    from .saml.config import SAML_ENABLED, SAML_REQUIRED, SAML_CONFIG, SAML_ON_LOGOUT_URL
-except ImportError:
-    SAML_ENABLED = False
-    SAML_REQUIRED = False
-
-# Default authentication URL
-LOGIN_URL = '/{}login/'.format(BASE_PATH)
-
-# Default landing page after authentication
-LOGIN_REDIRECT_URL = '/'
-
-if SAML_ENABLED:
-    # Prepend the SAML backend if SAML is configured
-    AUTHENTICATION_BACKENDS.insert(0, 'djangosaml2.backends.Saml2Backend')
-
-    # Various SAML options
-    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
-    # Attributes, including for usernames, are highly customizable.  In the
-    # simplest setup, your IDP will either need to pass 'uid' as an attribute,
-    # or set this to True to use the default 'NameId'. For deeper customization
-    # see the pysaml2 and djangosaml2 docs
-    SAML_USE_NAME_ID_AS_USERNAME = True
-
-    # If SAML is required, overwrite the LOGIN_URL
-    if SAML_REQUIRED:
-        LOGIN_URL = '/{}saml2/login/'.format(BASE_PATH)
-
-
-# Database
-configuration.DATABASE.update({'ENGINE': 'django.db.backends.postgresql'})
-=======
 #
 # Database
 #
@@ -176,7 +109,6 @@ else:
         'ENGINE': 'django.db.backends.postgresql'
     })
 
->>>>>>> upstream
 DATABASES = {
     'default': DATABASE,
 }
@@ -251,18 +183,14 @@ INSTALLED_APPS = [
     'users',
     'utilities',
     'virtualization',
-<<<<<<< HEAD
+    'drf_yasg',
     # 'djangosaml2'  # Uncomment for testing.
                      # See https://github.com/knaperek/djangosaml2/#changes-in-the-settings-py-file
-)
-=======
-    'drf_yasg',
 ]
 
 # Only load django-rq if the webhook backend is enabled
 if WEBHOOKS_ENABLED:
     INSTALLED_APPS.append('django_rq')
->>>>>>> upstream
 
 # Middleware
 MIDDLEWARE = (
@@ -337,14 +265,46 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
-<<<<<<< HEAD
 # Secrets
 SECRETS_MIN_PUBKEY_SIZE = 2048
-=======
+
 # Authentication URLs
 LOGIN_URL = '/{}login/'.format(BASE_PATH)
 
 CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+
+#
+# SAML authentication (optional)
+#
+
+try:
+    from .saml.config import SAML_ENABLED, SAML_REQUIRED, SAML_CONFIG, SAML_ON_LOGOUT_URL
+except ImportError:
+    SAML_ENABLED = False
+    SAML_REQUIRED = False
+
+# Default authentication URL
+LOGIN_URL = '/{}login/'.format(BASE_PATH)
+
+# Default landing page after authentication
+LOGIN_REDIRECT_URL = '/'
+
+if SAML_ENABLED:
+    # Prepend the SAML backend if SAML is configured
+    AUTHENTICATION_BACKENDS.insert(0, 'djangosaml2.backends.Saml2Backend')
+
+    # Various SAML options
+    SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+    # Attributes, including for usernames, are highly customizable.  In the
+    # simplest setup, your IDP will either need to pass 'uid' as an attribute,
+    # or set this to True to use the default 'NameId'. For deeper customization
+    # see the pysaml2 and djangosaml2 docs
+    SAML_USE_NAME_ID_AS_USERNAME = True
+
+    # If SAML is required, overwrite the LOGIN_URL
+    if SAML_REQUIRED:
+        LOGIN_URL = '/{}saml2/login/'.format(BASE_PATH)
 
 
 #
@@ -426,7 +386,6 @@ else:
 
 if REDIS_PASSWORD:
     REDIS_CACHE_CON_STRING = '{}:{}@'.format(REDIS_CACHE_CON_STRING, REDIS_PASSWORD)
->>>>>>> upstream
 
 REDIS_CACHE_CON_STRING = '{}{}:{}/{}'.format(REDIS_CACHE_CON_STRING, REDIS_HOST, REDIS_PORT, REDIS_CACHE_DATABASE)
 

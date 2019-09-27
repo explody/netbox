@@ -42,6 +42,17 @@ SAML_ON_LOGOUT_URL = 'https://idp.domain.com/'
 
 ## End Basic Settings
 
+# Attribute mappings
+SAML_ATTRIBUTE_MAPPING = {
+    'uid': ('username', ),
+    'email': ('email', ),
+    'first_name': ('first_name', ),
+    'last_name': ('last_name', ),
+    'is_staff': ('is_staff', ),
+    'is_superuser': ('is_superuser', ),
+    'groups': ('process_groups', ),
+}
+
 # Full pysaml2 config
 SAML_CONFIG = {
     # full path to the xmlsec1 binary programm
