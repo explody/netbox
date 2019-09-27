@@ -1,26 +1,22 @@
 {% extends '_base.html' %}
+{% load buttons %}
 
 {% block content %}
-<div class="pull-right">
+<div class="pull-right noprint">
     {% if perms.dcim.add_site %}
-		<a href="{% url 'dcim:site_add' %}" class="btn btn-primary">
-			<span class="fa fa-plus" aria-hidden="true"></span>
-			Add a site
-		</a>
-        <a href="{% url 'dcim:site_import' %}" class="btn btn-info">
-            <span class="fa fa-download" aria-hidden="true"></span>
-            Import sites
-        </a>
+        {% add_button 'dcim:site_add' %}
+        {% import_button 'dcim:site_import' %}
     {% endif %}
-    {% include 'inc/export_button.html' with obj_type='sites' %}
+    {% export_button content_type %}
 </div>
 <h1>{% block title %}Sites{% endblock %}</h1>
 <div class="row">
 	<div class="col-md-9">
-        {% include 'utilities/obj_table.html' with bulk_edit_url='dcim:site_bulk_edit' %}
+        {% include 'utilities/obj_table.html' with bulk_edit_url='dcim:site_bulk_edit' bulk_delete_url='dcim:site_bulk_delete' %}
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 noprint">
 		{% include 'inc/search_panel.html' %}
+		{% include 'inc/tags_panel.html' %}
     </div>
 </div>
 {% endblock %}

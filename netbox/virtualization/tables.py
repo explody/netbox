@@ -1,22 +1,26 @@
-from __future__ import unicode_literals
-
 import django_tables2 as tables
 from django_tables2.utils import Accessor
 
 from dcim.models import Interface
+from tenancy.tables import COL_TENANT
 from utilities.tables import BaseTable, ToggleColumn
 from .models import Cluster, ClusterGroup, ClusterType, VirtualMachine
 
-
 CLUSTERTYPE_ACTIONS = """
+<a href="{% url 'virtualization:clustertype_changelog' slug=record.slug %}" class="btn btn-default btn-xs" title="Changelog">
+    <i class="fa fa-history"></i>
+</a>
 {% if perms.virtualization.change_clustertype %}
-    <a href="{% url 'virtualization:clustertype_edit' slug=record.slug %}" class="btn btn-xs btn-warning"><i class="glyphicon glyphicon-pencil" aria-hidden="true"></i></a>
+    <a href="{% url 'virtualization:clustertype_edit' slug=record.slug %}?return_url={{ request.path }}" class="btn btn-xs btn-warning"><i class="glyphicon glyphicon-pencil" aria-hidden="true"></i></a>
 {% endif %}
 """
 
 CLUSTERGROUP_ACTIONS = """
+<a href="{% url 'virtualization:clustergroup_changelog' slug=record.slug %}" class="btn btn-default btn-xs" title="Changelog">
+    <i class="fa fa-history"></i>
+</a>
 {% if perms.virtualization.change_clustergroup %}
-    <a href="{% url 'virtualization:clustergroup_edit' slug=record.slug %}" class="btn btn-xs btn-warning"><i class="glyphicon glyphicon-pencil" aria-hidden="true"></i></a>
+    <a href="{% url 'virtualization:clustergroup_edit' slug=record.slug %}?return_url={{ request.path }}" class="btn btn-xs btn-warning"><i class="glyphicon glyphicon-pencil" aria-hidden="true"></i></a>
 {% endif %}
 """
 
@@ -25,7 +29,7 @@ VIRTUALMACHINE_STATUS = """
 """
 
 VIRTUALMACHINE_ROLE = """
-<label class="label" style="background-color: #{{ record.role.color }}">{{ value }}</label>
+{% if record.role %}<label class="label" style="background-color: #{{ record.role.color }}">{{ value }}</label>{% else %}&mdash;{% endif %}
 """
 
 VIRTUALMACHINE_PRIMARY_IP = """
@@ -45,7 +49,7 @@ class ClusterTypeTable(BaseTable):
     cluster_count = tables.Column(verbose_name='Clusters')
     actions = tables.TemplateColumn(
         template_code=CLUSTERTYPE_ACTIONS,
-        attrs={'td': {'class': 'text-right'}},
+        attrs={'td': {'class': 'text-right noprint'}},
         verbose_name=''
     )
 
@@ -64,7 +68,7 @@ class ClusterGroupTable(BaseTable):
     cluster_count = tables.Column(verbose_name='Clusters')
     actions = tables.TemplateColumn(
         template_code=CLUSTERGROUP_ACTIONS,
-        attrs={'td': {'class': 'text-right'}},
+        attrs={'td': {'class': 'text-right noprint'}},
         verbose_name=''
     )
 
@@ -80,8 +84,9 @@ class ClusterGroupTable(BaseTable):
 class ClusterTable(BaseTable):
     pk = ToggleColumn()
     name = tables.LinkColumn()
-    device_count = tables.Column(verbose_name='Devices')
-    vm_count = tables.Column(verbose_name='VMs')
+    site = tables.LinkColumn('dcim:site', args=[Accessor('site.slug')])
+    device_count = tables.Column(accessor=Accessor('devices.count'), orderable=False, verbose_name='Devices')
+    vm_count = tables.Column(accessor=Accessor('virtual_machines.count'), orderable=False, verbose_name='VMs')
 
     class Meta(BaseTable.Meta):
         model = Cluster
@@ -98,7 +103,7 @@ class VirtualMachineTable(BaseTable):
     status = tables.TemplateColumn(template_code=VIRTUALMACHINE_STATUS)
     cluster = tables.LinkColumn('virtualization:cluster', args=[Accessor('cluster.pk')])
     role = tables.TemplateColumn(VIRTUALMACHINE_ROLE)
-    tenant = tables.LinkColumn('tenancy:tenant', args=[Accessor('tenant.slug')])
+    tenant = tables.TemplateColumn(template_code=COL_TENANT)
 
     class Meta(BaseTable.Meta):
         model = VirtualMachine

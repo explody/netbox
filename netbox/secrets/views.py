@@ -1,13 +1,11 @@
-from __future__ import unicode_literals
 import base64
 
 from django.contrib import messages
-from django.contrib.auth.decorators import permission_required, login_required
+from django.contrib.auth.decorators import permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
-from django.utils.decorators import method_decorator
 from django.views.generic import View
 
 from dcim.models import Device
@@ -33,7 +31,8 @@ def get_session_key(request):
 # Secret roles
 #
 
-class SecretRoleListView(ObjectListView):
+class SecretRoleListView(PermissionRequiredMixin, ObjectListView):
+    permission_required = 'secrets.view_secretrole'
     queryset = SecretRole.objects.annotate(secret_count=Count('secrets'))
     table = tables.SecretRoleTable
     template_name = 'secrets/secretrole_list.html'
@@ -43,9 +42,7 @@ class SecretRoleCreateView(PermissionRequiredMixin, ObjectEditView):
     permission_required = 'secrets.add_secretrole'
     model = SecretRole
     model_form = forms.SecretRoleForm
-
-    def get_return_url(self, request, obj):
-        return reverse('secrets:secretrole_list')
+    default_return_url = 'secrets:secretrole_list'
 
 
 class SecretRoleEditView(SecretRoleCreateView):
@@ -61,7 +58,6 @@ class SecretRoleBulkImportView(PermissionRequiredMixin, BulkImportView):
 
 class SecretRoleBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
     permission_required = 'secrets.delete_secretrole'
-    cls = SecretRole
     queryset = SecretRole.objects.annotate(secret_count=Count('secrets'))
     table = tables.SecretRoleTable
     default_return_url = 'secrets:secretrole_list'
@@ -71,17 +67,17 @@ class SecretRoleBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
 # Secrets
 #
 
-@method_decorator(login_required, name='dispatch')
-class SecretListView(ObjectListView):
-    queryset = Secret.objects.select_related('role', 'device')
+class SecretListView(PermissionRequiredMixin, ObjectListView):
+    permission_required = 'secrets.view_secret'
+    queryset = Secret.objects.prefetch_related('role', 'device')
     filter = filters.SecretFilter
     filter_form = forms.SecretFilterForm
     table = tables.SecretTable
     template_name = 'secrets/secret_list.html'
 
 
-@method_decorator(login_required, name='dispatch')
-class SecretView(View):
+class SecretView(PermissionRequiredMixin, View):
+    permission_required = 'secrets.view_secret'
 
     def get(self, request, pk):
 
@@ -124,6 +120,8 @@ def secret_add(request, pk):
                     secret.plaintext = str(form.cleaned_data['plaintext'])
                     secret.encrypt(master_key)
                     secret.save()
+                    form.save_m2m()
+
                     messages.success(request, "Added new secret: {}.".format(secret))
                     if '_addanother' in request.POST:
                         return redirect('dcim:device_addsecret', pk=device.pk)
@@ -165,7 +163,7 @@ def secret_edit(request, pk):
                 # Create and encrypt the new Secret
                 if master_key is not None:
                     secret = form.save(commit=False)
-                    secret.plaintext = str(form.cleaned_data['plaintext'])
+                    secret.plaintext = form.cleaned_data['plaintext']
                     secret.encrypt(master_key)
                     secret.save()
                     messages.success(request, "Modified secret {}.".format(secret))
@@ -200,7 +198,7 @@ class SecretDeleteView(PermissionRequiredMixin, ObjectDeleteView):
 
 
 class SecretBulkImportView(BulkImportView):
-    permission_required = 'ipam.add_vlan'
+    permission_required = 'secrets.add_secret'
     model_form = forms.SecretCSVForm
     table = tables.SecretTable
     template_name = 'secrets/secret_import.html'
@@ -232,7 +230,7 @@ class SecretBulkImportView(BulkImportView):
                 messages.error(request, "No session key found for this user.")
 
             if self.master_key is not None:
-                return super(SecretBulkImportView, self).post(request)
+                return super().post(request)
             else:
                 messages.error(request, "Invalid private key! Unable to encrypt secret data.")
 
@@ -243,14 +241,13 @@ class SecretBulkImportView(BulkImportView):
             'form': self._import_form(request.POST),
             'fields': self.model_form().fields,
             'obj_type': self.model_form._meta.model._meta.verbose_name,
-            'return_url': self.default_return_url,
+            'return_url': self.get_return_url(request),
         })
 
 
 class SecretBulkEditView(PermissionRequiredMixin, BulkEditView):
     permission_required = 'secrets.change_secret'
-    cls = Secret
-    queryset = Secret.objects.select_related('role', 'device')
+    queryset = Secret.objects.prefetch_related('role', 'device')
     filter = filters.SecretFilter
     table = tables.SecretTable
     form = forms.SecretBulkEditForm
@@ -259,8 +256,7 @@ class SecretBulkEditView(PermissionRequiredMixin, BulkEditView):
 
 class SecretBulkDeleteView(PermissionRequiredMixin, BulkDeleteView):
     permission_required = 'secrets.delete_secret'
-    cls = Secret
-    queryset = Secret.objects.select_related('role', 'device')
+    queryset = Secret.objects.prefetch_related('role', 'device')
     filter = filters.SecretFilter
     table = tables.SecretTable
     default_return_url = 'secrets:secret_list'

@@ -1,4 +1,4 @@
-The following are optional settings which may be declared in `netbox/netbox/configuration.py`.
+# Optional Configuration Settings
 
 ## ADMINS
 
@@ -44,6 +44,22 @@ BASE_PATH = 'netbox/'
 
 ---
 
+## CACHE_TIMEOUT
+
+Default: 900
+
+The number of seconds to retain cache entries before automatically invalidating them.
+
+---
+
+## CHANGELOG_RETENTION
+
+Default: 90
+
+The number of days to retain logged changes (object creations, updates, and deletions). Set this to `0` to retain changes in the database indefinitely. (Warning: This will greatly increase database size over time.)
+
+---
+
 ## CORS_ORIGIN_ALLOW_ALL
 
 Default: False
@@ -56,7 +72,13 @@ If True, cross-origin resource sharing (CORS) requests will be accepted from all
 
 ## CORS_ORIGIN_REGEX_WHITELIST
 
-These settings specify a list of origins that are authorized to make cross-site API requests. Use `CORS_ORIGIN_WHITELIST` to define a list of exact hostnames, or `CORS_ORIGIN_REGEX_WHITELIST` to define a set of regular expressions. (These settings have no effect if `CORS_ORIGIN_ALLOW_ALL` is True.)
+These settings specify a list of origins that are authorized to make cross-site API requests. Use `CORS_ORIGIN_WHITELIST` to define a list of exact hostnames, or `CORS_ORIGIN_REGEX_WHITELIST` to define a set of regular expressions. (These settings have no effect if `CORS_ORIGIN_ALLOW_ALL` is True.) For example:
+
+```
+CORS_ORIGIN_WHITELIST = [
+    'https://example.com',
+]
+```
 
 ---
 
@@ -78,6 +100,30 @@ In order to send email, NetBox needs an email server configured. The following i
 * PASSSWORD - Password with which to authenticate
 * TIMEOUT - Amount of time to wait for a connection (seconds)
 * FROM_EMAIL - Sender address for emails sent by NetBox
+
+---
+
+## EXEMPT_VIEW_PERMISSIONS
+
+Default: Empty list
+
+A list of models to exempt from the enforcement of view permissions. Models listed here will be viewable by all users and by anonymous users.
+
+List models in the form `<app>.<model>`. For example:
+
+```
+EXEMPT_VIEW_PERMISSIONS = [
+    'dcim.site',
+    'dcim.region',
+    'ipam.prefix',
+]
+```
+
+To exempt _all_ models from view permission enforcement, set the following. (Note that `EXEMPT_VIEW_PERMISSIONS` must be an iterable.)
+
+```
+EXEMPT_VIEW_PERMISSIONS = ['*']
+```
 
 ---
 
@@ -125,6 +171,14 @@ Setting this to True will permit only authenticated users to access any part of 
 
 ---
 
+## LOGIN_TIMEOUT
+
+Default: 1209600 seconds (14 days)
+
+The liftetime (in seconds) of the authentication cookie issued to a NetBox user upon login.
+
+---
+
 ## MAINTENANCE_MODE
 
 Default: False
@@ -146,6 +200,14 @@ An API consumer can request an arbitrary number of objects by appending the "lim
 Default: $BASE_DIR/netbox/media/
 
 The file path to the location where media files (such as image attachments) are stored. By default, this is the `netbox/media/` directory within the base NetBox installation path.
+
+---
+
+## METRICS_ENABLED
+
+Default: False
+
+Toggle exposing Prometheus metrics at `/metrics`. See the [Prometheus Metrics](../additional-features/prometheus-metrics/) documentation for more details.
 
 ---
 
@@ -215,11 +277,35 @@ The file path to the location where custom reports will be kept. By default, thi
 
 ---
 
+## SCRIPTS_ROOT
+
+Default: $BASE_DIR/netbox/scripts/
+
+The file path to the location where custom scripts will be kept. By default, this is the `netbox/scripts/` directory within the base NetBox installation path.
+
+---
+
+## SESSION_FILE_PATH
+
+Default: None
+
+Session data is used to track authenticated users when they access NetBox. By default, NetBox stores session data in the PostgreSQL database. However, this inhibits authentication to a standby instance of NetBox without write access to the database. Alternatively, a local file path may be specified here and NetBox will store session data as files instead of using the database. Note that the user as which NetBox runs must have read and write permissions to this path.
+
+---
+
 ## TIME_ZONE
 
 Default: UTC
 
 The time zone NetBox will use when dealing with dates and times. It is recommended to use UTC time unless you have a specific need to use a local time zone. [List of available time zones](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones).
+
+---
+
+## WEBHOOKS_ENABLED
+
+Default: False
+
+Enable this option to run the webhook backend. See the docs section on the webhook backend [here](../additional-features/webhooks/) for more information on setup and use.
 
 ---
 

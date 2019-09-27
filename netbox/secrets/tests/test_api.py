@@ -1,17 +1,11 @@
-from __future__ import unicode_literals
 import base64
 
-from rest_framework import status
-from rest_framework.test import APITestCase
-
-from django.contrib.auth.models import User
 from django.urls import reverse
+from rest_framework import status
 
 from dcim.models import Device, DeviceRole, DeviceType, Manufacturer, Site
 from secrets.models import Secret, SecretRole, SessionKey, UserKey
-from users.models import Token
-from utilities.tests import HttpStatusMixin
-
+from utilities.testing import APITestCase
 
 # Dummy RSA key pair for testing use only
 PRIVATE_KEY = """-----BEGIN RSA PRIVATE KEY-----
@@ -53,13 +47,11 @@ qQIDAQAB
 -----END PUBLIC KEY-----"""
 
 
-class SecretRoleTest(HttpStatusMixin, APITestCase):
+class SecretRoleTest(APITestCase):
 
     def setUp(self):
 
-        user = User.objects.create(username='testuser', is_superuser=True)
-        token = Token.objects.create(user=user)
-        self.header = {'HTTP_AUTHORIZATION': 'Token {}'.format(token.key)}
+        super().setUp()
 
         self.secretrole1 = SecretRole.objects.create(name='Test Secret Role 1', slug='test-secret-role-1')
         self.secretrole2 = SecretRole.objects.create(name='Test Secret Role 2', slug='test-secret-role-2')
@@ -79,21 +71,57 @@ class SecretRoleTest(HttpStatusMixin, APITestCase):
 
         self.assertEqual(response.data['count'], 3)
 
+    def test_list_secretroles_brief(self):
+
+        url = reverse('secrets-api:secretrole-list')
+        response = self.client.get('{}?brief=1'.format(url), **self.header)
+
+        self.assertEqual(
+            sorted(response.data['results'][0]),
+            ['id', 'name', 'secret_count', 'slug', 'url']
+        )
+
     def test_create_secretrole(self):
 
         data = {
-            'name': 'Test SecretRole 4',
-            'slug': 'test-secretrole-4',
+            'name': 'Test Secret Role 4',
+            'slug': 'test-secret-role-4',
         }
 
         url = reverse('secrets-api:secretrole-list')
-        response = self.client.post(url, data, **self.header)
+        response = self.client.post(url, data, format='json', **self.header)
 
         self.assertHttpStatus(response, status.HTTP_201_CREATED)
         self.assertEqual(SecretRole.objects.count(), 4)
         secretrole4 = SecretRole.objects.get(pk=response.data['id'])
         self.assertEqual(secretrole4.name, data['name'])
         self.assertEqual(secretrole4.slug, data['slug'])
+
+    def test_create_secretrole_bulk(self):
+
+        data = [
+            {
+                'name': 'Test Secret Role 4',
+                'slug': 'test-secret-role-4',
+            },
+            {
+                'name': 'Test Secret Role 5',
+                'slug': 'test-secret-role-5',
+            },
+            {
+                'name': 'Test Secret Role 6',
+                'slug': 'test-secret-role-6',
+            },
+        ]
+
+        url = reverse('secrets-api:secretrole-list')
+        response = self.client.post(url, data, format='json', **self.header)
+
+        self.assertHttpStatus(response, status.HTTP_201_CREATED)
+        self.assertEqual(SecretRole.objects.count(), 6)
+        self.assertEqual(response.data[0]['name'], data[0]['name'])
+        self.assertEqual(response.data[1]['name'], data[1]['name'])
+        self.assertEqual(response.data[2]['name'], data[2]['name'])
 
     def test_update_secretrole(self):
 
@@ -103,7 +131,7 @@ class SecretRoleTest(HttpStatusMixin, APITestCase):
         }
 
         url = reverse('secrets-api:secretrole-detail', kwargs={'pk': self.secretrole1.pk})
-        response = self.client.put(url, data, **self.header)
+        response = self.client.put(url, data, format='json', **self.header)
 
         self.assertHttpStatus(response, status.HTTP_200_OK)
         self.assertEqual(SecretRole.objects.count(), 3)
@@ -120,28 +148,27 @@ class SecretRoleTest(HttpStatusMixin, APITestCase):
         self.assertEqual(SecretRole.objects.count(), 2)
 
 
-class SecretTest(HttpStatusMixin, APITestCase):
+class SecretTest(APITestCase):
 
     def setUp(self):
 
-        user = User.objects.create(username='testuser', is_superuser=True)
-        token = Token.objects.create(user=user)
+        super().setUp()
 
-        userkey = UserKey(user=user, public_key=PUBLIC_KEY)
+        userkey = UserKey(user=self.user, public_key=PUBLIC_KEY)
         userkey.save()
         self.master_key = userkey.get_master_key(PRIVATE_KEY)
         session_key = SessionKey(userkey=userkey)
         session_key.save(self.master_key)
 
         self.header = {
-            'HTTP_AUTHORIZATION': 'Token {}'.format(token.key),
+            'HTTP_AUTHORIZATION': 'Token {}'.format(self.token.key),
             'HTTP_X_SESSION_KEY': base64.b64encode(session_key.key),
         }
 
         self.plaintext = {
-            'secret1': 'Secret#1Plaintext',
-            'secret2': 'Secret#2Plaintext',
-            'secret3': 'Secret#3Plaintext',
+            'secret1': 'Secret #1 Plaintext',
+            'secret2': 'Secret #2 Plaintext',
+            'secret3': 'Secret #3 Plaintext',
         }
 
         site = Site.objects.create(name='Test Site 1', slug='test-site-1')
@@ -188,11 +215,12 @@ class SecretTest(HttpStatusMixin, APITestCase):
         data = {
             'device': self.device.pk,
             'role': self.secretrole1.pk,
-            'plaintext': 'Secret#4Plaintext',
+            'name': 'Test Secret 4',
+            'plaintext': 'Secret #4 Plaintext',
         }
 
         url = reverse('secrets-api:secret-list')
-        response = self.client.post(url, data, **self.header)
+        response = self.client.post(url, data, format='json', **self.header)
 
         self.assertHttpStatus(response, status.HTTP_201_CREATED)
         self.assertEqual(response.data['plaintext'], data['plaintext'])
@@ -201,6 +229,38 @@ class SecretTest(HttpStatusMixin, APITestCase):
         secret4.decrypt(self.master_key)
         self.assertEqual(secret4.role_id, data['role'])
         self.assertEqual(secret4.plaintext, data['plaintext'])
+
+    def test_create_secret_bulk(self):
+
+        data = [
+            {
+                'device': self.device.pk,
+                'role': self.secretrole1.pk,
+                'name': 'Test Secret 4',
+                'plaintext': 'Secret #4 Plaintext',
+            },
+            {
+                'device': self.device.pk,
+                'role': self.secretrole1.pk,
+                'name': 'Test Secret 5',
+                'plaintext': 'Secret #5 Plaintext',
+            },
+            {
+                'device': self.device.pk,
+                'role': self.secretrole1.pk,
+                'name': 'Test Secret 6',
+                'plaintext': 'Secret #6 Plaintext',
+            },
+        ]
+
+        url = reverse('secrets-api:secret-list')
+        response = self.client.post(url, data, format='json', **self.header)
+
+        self.assertHttpStatus(response, status.HTTP_201_CREATED)
+        self.assertEqual(Secret.objects.count(), 6)
+        self.assertEqual(response.data[0]['plaintext'], data[0]['plaintext'])
+        self.assertEqual(response.data[1]['plaintext'], data[1]['plaintext'])
+        self.assertEqual(response.data[2]['plaintext'], data[2]['plaintext'])
 
     def test_update_secret(self):
 
@@ -211,7 +271,7 @@ class SecretTest(HttpStatusMixin, APITestCase):
         }
 
         url = reverse('secrets-api:secret-detail', kwargs={'pk': self.secret1.pk})
-        response = self.client.put(url, data, **self.header)
+        response = self.client.put(url, data, format='json', **self.header)
 
         self.assertHttpStatus(response, status.HTTP_200_OK)
         self.assertEqual(response.data['plaintext'], data['plaintext'])
@@ -230,21 +290,20 @@ class SecretTest(HttpStatusMixin, APITestCase):
         self.assertEqual(Secret.objects.count(), 2)
 
 
-class GetSessionKeyTest(HttpStatusMixin, APITestCase):
+class GetSessionKeyTest(APITestCase):
 
     def setUp(self):
 
-        user = User.objects.create(username='testuser', is_superuser=True)
-        token = Token.objects.create(user=user)
+        super().setUp()
 
-        userkey = UserKey(user=user, public_key=PUBLIC_KEY)
+        userkey = UserKey(user=self.user, public_key=PUBLIC_KEY)
         userkey.save()
         master_key = userkey.get_master_key(PRIVATE_KEY)
         self.session_key = SessionKey(userkey=userkey)
         self.session_key.save(master_key)
 
         self.header = {
-            'HTTP_AUTHORIZATION': 'Token {}'.format(token.key),
+            'HTTP_AUTHORIZATION': 'Token {}'.format(self.token.key),
         }
 
     def test_get_session_key(self):

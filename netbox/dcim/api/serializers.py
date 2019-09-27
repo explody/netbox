@@ -1,198 +1,153 @@
-from __future__ import unicode_literals
-from collections import OrderedDict
-
+from django.contrib.contenttypes.models import ContentType
+from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from taggit_serializer.serializers import TaggitSerializer, TagListSerializerField
 
-from ipam.models import IPAddress
-from circuits.models import Circuit, CircuitTermination
+from dcim.constants import *
 from dcim.models import (
-    CONNECTION_STATUS_CHOICES, ConsolePort, ConsolePortTemplate, ConsoleServerPort, ConsoleServerPortTemplate, Device,
-    DeviceBay, DeviceBayTemplate, DeviceType, DeviceRole, IFACE_FF_CHOICES, IFACE_ORDERING_CHOICES, Interface,
-    InterfaceConnection, InterfaceTemplate, Manufacturer, InventoryItem, Platform, PowerOutlet, PowerOutletTemplate,
-    PowerPort, PowerPortTemplate, Rack, RackGroup, RackReservation, RackRole, RACK_FACE_CHOICES, RACK_TYPE_CHOICES,
-    RACK_WIDTH_CHOICES, Region, Site, STATUS_CHOICES, SUBDEVICE_ROLE_CHOICES,
+    Cable, ConsolePort, ConsolePortTemplate, ConsoleServerPort, ConsoleServerPortTemplate, Device, DeviceBay,
+    DeviceBayTemplate, DeviceType, DeviceRole, FrontPort, FrontPortTemplate, Interface, InterfaceTemplate,
+    Manufacturer, InventoryItem, Platform, PowerFeed, PowerOutlet, PowerOutletTemplate, PowerPanel, PowerPort,
+    PowerPortTemplate, Rack, RackGroup, RackReservation, RackRole, RearPort, RearPortTemplate, Region, Site,
+    VirtualChassis,
 )
 from extras.api.customfields import CustomFieldModelSerializer
-from tenancy.api.serializers import NestedTenantSerializer
-from utilities.api import ChoiceFieldSerializer, ValidatedModelSerializer
-from virtualization.models import Cluster
+from ipam.api.nested_serializers import NestedIPAddressSerializer, NestedVLANSerializer
+from ipam.models import VLAN
+from tenancy.api.nested_serializers import NestedTenantSerializer
+from users.api.nested_serializers import NestedUserSerializer
+from utilities.api import (
+    ChoiceField, ContentTypeField, SerializedPKRelatedField, TimeZoneField, ValidatedModelSerializer,
+    WritableNestedSerializer, get_serializer_for_model,
+)
+from virtualization.api.nested_serializers import NestedClusterSerializer
+from .nested_serializers import *
+
+
+class ConnectedEndpointSerializer(ValidatedModelSerializer):
+    connected_endpoint_type = serializers.SerializerMethodField(read_only=True)
+    connected_endpoint = serializers.SerializerMethodField(read_only=True)
+    connection_status = ChoiceField(choices=CONNECTION_STATUS_CHOICES, read_only=True)
+
+    def get_connected_endpoint_type(self, obj):
+        if hasattr(obj, 'connected_endpoint') and obj.connected_endpoint is not None:
+            return '{}.{}'.format(
+                obj.connected_endpoint._meta.app_label,
+                obj.connected_endpoint._meta.model_name
+            )
+        return None
+
+    @swagger_serializer_method(serializer_or_field=serializers.DictField)
+    def get_connected_endpoint(self, obj):
+        """
+        Return the appropriate serializer for the type of connected object.
+        """
+        if getattr(obj, 'connected_endpoint', None) is None:
+            return None
+
+        serializer = get_serializer_for_model(obj.connected_endpoint, prefix='Nested')
+        context = {'request': self.context['request']}
+        data = serializer(obj.connected_endpoint, context=context).data
+
+        return data
 
 
 #
-# Regions
+# Regions/sites
 #
-
-class NestedRegionSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:region-detail')
-
-    class Meta:
-        model = Region
-        fields = ['id', 'url', 'name', 'slug']
-
 
 class RegionSerializer(serializers.ModelSerializer):
-    parent = NestedRegionSerializer()
+    parent = NestedRegionSerializer(required=False, allow_null=True)
+    site_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Region
-        fields = ['id', 'name', 'slug', 'parent']
+        fields = ['id', 'name', 'slug', 'parent', 'site_count']
 
 
-class WritableRegionSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = Region
-        fields = ['id', 'name', 'slug', 'parent']
-
-
-#
-# Sites
-#
-
-class SiteSerializer(CustomFieldModelSerializer):
-    region = NestedRegionSerializer()
-    tenant = NestedTenantSerializer()
+class SiteSerializer(TaggitSerializer, CustomFieldModelSerializer):
+    status = ChoiceField(choices=SITE_STATUS_CHOICES, required=False)
+    region = NestedRegionSerializer(required=False, allow_null=True)
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
+    time_zone = TimeZoneField(required=False)
+    tags = TagListSerializerField(required=False)
+    circuit_count = serializers.IntegerField(read_only=True)
+    device_count = serializers.IntegerField(read_only=True)
+    prefix_count = serializers.IntegerField(read_only=True)
+    rack_count = serializers.IntegerField(read_only=True)
+    virtualmachine_count = serializers.IntegerField(read_only=True)
+    vlan_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Site
         fields = [
-            'id', 'name', 'slug', 'region', 'tenant', 'facility', 'asn', 'physical_address', 'shipping_address',
-            'contact_name', 'contact_phone', 'contact_email', 'comments', 'custom_fields', 'count_prefixes',
-            'count_vlans', 'count_racks', 'count_devices', 'count_circuits',
+            'id', 'name', 'slug', 'status', 'region', 'tenant', 'facility', 'asn', 'time_zone', 'description',
+            'physical_address', 'shipping_address', 'latitude', 'longitude', 'contact_name', 'contact_phone',
+            'contact_email', 'comments', 'tags', 'custom_fields', 'created', 'last_updated', 'circuit_count',
+            'device_count', 'prefix_count', 'rack_count', 'virtualmachine_count', 'vlan_count',
         ]
-
-
-class NestedSiteSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:site-detail')
-
-    class Meta:
-        model = Site
-        fields = ['id', 'url', 'name', 'slug']
-
-
-class WritableSiteSerializer(CustomFieldModelSerializer):
-
-    class Meta:
-        model = Site
-        fields = [
-            'id', 'name', 'slug', 'region', 'tenant', 'facility', 'asn', 'physical_address', 'shipping_address',
-            'contact_name', 'contact_phone', 'contact_email', 'comments', 'custom_fields',
-        ]
-
-
-#
-# Rack groups
-#
-
-class RackGroupSerializer(serializers.ModelSerializer):
-    site = NestedSiteSerializer()
-
-    class Meta:
-        model = RackGroup
-        fields = ['id', 'name', 'slug', 'site']
-
-
-class NestedRackGroupSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:rackgroup-detail')
-
-    class Meta:
-        model = RackGroup
-        fields = ['id', 'url', 'name', 'slug']
-
-
-class WritableRackGroupSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = RackGroup
-        fields = ['id', 'name', 'slug', 'site']
-
-
-#
-# Rack roles
-#
-
-class RackRoleSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = RackRole
-        fields = ['id', 'name', 'slug', 'color']
-
-
-class NestedRackRoleSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:rackrole-detail')
-
-    class Meta:
-        model = RackRole
-        fields = ['id', 'url', 'name', 'slug']
 
 
 #
 # Racks
 #
 
-class RackSerializer(CustomFieldModelSerializer):
+class RackGroupSerializer(ValidatedModelSerializer):
     site = NestedSiteSerializer()
-    group = NestedRackGroupSerializer()
-    tenant = NestedTenantSerializer()
-    role = NestedRackRoleSerializer()
-    type = ChoiceFieldSerializer(choices=RACK_TYPE_CHOICES)
-    width = ChoiceFieldSerializer(choices=RACK_WIDTH_CHOICES)
+    rack_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = RackGroup
+        fields = ['id', 'name', 'slug', 'site', 'rack_count']
+
+
+class RackRoleSerializer(ValidatedModelSerializer):
+    rack_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = RackRole
+        fields = ['id', 'name', 'slug', 'color', 'rack_count']
+
+
+class RackSerializer(TaggitSerializer, CustomFieldModelSerializer):
+    site = NestedSiteSerializer()
+    group = NestedRackGroupSerializer(required=False, allow_null=True, default=None)
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
+    status = ChoiceField(choices=RACK_STATUS_CHOICES, required=False)
+    role = NestedRackRoleSerializer(required=False, allow_null=True)
+    type = ChoiceField(choices=RACK_TYPE_CHOICES, required=False, allow_null=True)
+    width = ChoiceField(choices=RACK_WIDTH_CHOICES, required=False)
+    outer_unit = ChoiceField(choices=RACK_DIMENSION_UNIT_CHOICES, required=False)
+    tags = TagListSerializerField(required=False)
+    device_count = serializers.IntegerField(read_only=True)
+    powerfeed_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Rack
         fields = [
-            'id', 'name', 'facility_id', 'display_name', 'site', 'group', 'tenant', 'role', 'serial', 'type', 'width',
-            'u_height', 'desc_units', 'comments', 'custom_fields',
+            'id', 'name', 'facility_id', 'display_name', 'site', 'group', 'tenant', 'status', 'role', 'serial',
+            'asset_tag', 'type', 'width', 'u_height', 'desc_units', 'outer_width', 'outer_depth', 'outer_unit',
+            'comments', 'tags', 'custom_fields', 'created', 'last_updated', 'device_count', 'powerfeed_count',
         ]
-
-
-class NestedRackSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:rack-detail')
-
-    class Meta:
-        model = Rack
-        fields = ['id', 'url', 'name', 'display_name']
-
-
-class WritableRackSerializer(CustomFieldModelSerializer):
-
-    class Meta:
-        model = Rack
-        fields = [
-            'id', 'name', 'facility_id', 'site', 'group', 'tenant', 'role', 'serial', 'type', 'width', 'u_height',
-            'desc_units', 'comments', 'custom_fields',
-        ]
-        # Omit the UniqueTogetherValidator that would be automatically added to validate (site, facility_id). This
+        # Omit the UniqueTogetherValidator that would be automatically added to validate (group, facility_id). This
         # prevents facility_id from being interpreted as a required field.
         validators = [
-            UniqueTogetherValidator(queryset=Rack.objects.all(), fields=('site', 'name'))
+            UniqueTogetherValidator(queryset=Rack.objects.all(), fields=('group', 'name'))
         ]
 
     def validate(self, data):
 
-        # Validate uniqueness of (site, facility_id) since we omitted the automatically-created validator from Meta.
+        # Validate uniqueness of (group, facility_id) since we omitted the automatically-created validator from Meta.
         if data.get('facility_id', None):
-            validator = UniqueTogetherValidator(queryset=Rack.objects.all(), fields=('site', 'facility_id'))
+            validator = UniqueTogetherValidator(queryset=Rack.objects.all(), fields=('group', 'facility_id'))
             validator.set_context(self)
             validator(data)
 
         # Enforce model validation
-        super(WritableRackSerializer, self).validate(data)
+        super().validate(data)
 
         return data
-
-
-#
-# Rack units
-#
-
-class NestedDeviceSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:device-detail')
-
-    class Meta:
-        model = Device
-        fields = ['id', 'url', 'name', 'display_name']
 
 
 class RackUnitSerializer(serializers.Serializer):
@@ -205,87 +160,45 @@ class RackUnitSerializer(serializers.Serializer):
     device = NestedDeviceSerializer(read_only=True)
 
 
-#
-# Rack reservations
-#
-
-class RackReservationSerializer(serializers.ModelSerializer):
+class RackReservationSerializer(ValidatedModelSerializer):
     rack = NestedRackSerializer()
+    user = NestedUserSerializer()
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
 
     class Meta:
         model = RackReservation
-        fields = ['id', 'rack', 'units', 'created', 'user', 'description']
-
-
-class WritableRackReservationSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = RackReservation
-        fields = ['id', 'rack', 'units', 'user', 'description']
-
-
-#
-# Manufacturers
-#
-
-class ManufacturerSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = Manufacturer
-        fields = ['id', 'name', 'slug']
-
-
-class NestedManufacturerSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:manufacturer-detail')
-
-    class Meta:
-        model = Manufacturer
-        fields = ['id', 'url', 'name', 'slug']
+        fields = ['id', 'rack', 'units', 'created', 'user', 'tenant', 'description']
 
 
 #
 # Device types
 #
 
-class DeviceTypeSerializer(CustomFieldModelSerializer):
+class ManufacturerSerializer(ValidatedModelSerializer):
+    devicetype_count = serializers.IntegerField(read_only=True)
+    inventoryitem_count = serializers.IntegerField(read_only=True)
+    platform_count = serializers.IntegerField(read_only=True)
+
+    class Meta:
+        model = Manufacturer
+        fields = ['id', 'name', 'slug', 'devicetype_count', 'inventoryitem_count', 'platform_count']
+
+
+class DeviceTypeSerializer(TaggitSerializer, CustomFieldModelSerializer):
     manufacturer = NestedManufacturerSerializer()
-    interface_ordering = ChoiceFieldSerializer(choices=IFACE_ORDERING_CHOICES)
-    subdevice_role = ChoiceFieldSerializer(choices=SUBDEVICE_ROLE_CHOICES)
-    instance_count = serializers.IntegerField(source='instances.count', read_only=True)
+    subdevice_role = ChoiceField(choices=SUBDEVICE_ROLE_CHOICES, required=False, allow_null=True)
+    tags = TagListSerializerField(required=False)
+    device_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = DeviceType
         fields = [
-            'id', 'manufacturer', 'model', 'slug', 'part_number', 'u_height', 'is_full_depth', 'interface_ordering',
-            'is_console_server', 'is_pdu', 'is_network_device', 'subdevice_role', 'comments', 'custom_fields',
-            'instance_count',
+            'id', 'manufacturer', 'model', 'slug', 'display_name', 'part_number', 'u_height', 'is_full_depth',
+            'subdevice_role', 'comments', 'tags', 'custom_fields', 'created', 'last_updated', 'device_count',
         ]
 
 
-class NestedDeviceTypeSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:devicetype-detail')
-    manufacturer = NestedManufacturerSerializer()
-
-    class Meta:
-        model = DeviceType
-        fields = ['id', 'url', 'manufacturer', 'model', 'slug']
-
-
-class WritableDeviceTypeSerializer(CustomFieldModelSerializer):
-
-    class Meta:
-        model = DeviceType
-        fields = [
-            'id', 'manufacturer', 'model', 'slug', 'part_number', 'u_height', 'is_full_depth', 'interface_ordering',
-            'is_console_server', 'is_pdu', 'is_network_device', 'subdevice_role', 'comments', 'custom_fields',
-        ]
-
-
-#
-# Console port templates
-#
-
-class ConsolePortTemplateSerializer(serializers.ModelSerializer):
+class ConsolePortTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
 
     class Meta:
@@ -293,18 +206,7 @@ class ConsolePortTemplateSerializer(serializers.ModelSerializer):
         fields = ['id', 'device_type', 'name']
 
 
-class WritableConsolePortTemplateSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = ConsolePortTemplate
-        fields = ['id', 'device_type', 'name']
-
-
-#
-# Console server port templates
-#
-
-class ConsoleServerPortTemplateSerializer(serializers.ModelSerializer):
+class ConsoleServerPortTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
 
     class Meta:
@@ -312,191 +214,118 @@ class ConsoleServerPortTemplateSerializer(serializers.ModelSerializer):
         fields = ['id', 'device_type', 'name']
 
 
-class WritableConsoleServerPortTemplateSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = ConsoleServerPortTemplate
-        fields = ['id', 'device_type', 'name']
-
-
-#
-# Power port templates
-#
-
-class PowerPortTemplateSerializer(serializers.ModelSerializer):
+class PowerPortTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
 
     class Meta:
         model = PowerPortTemplate
-        fields = ['id', 'device_type', 'name']
+        fields = ['id', 'device_type', 'name', 'maximum_draw', 'allocated_draw']
 
 
-class WritablePowerPortTemplateSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = PowerPortTemplate
-        fields = ['id', 'device_type', 'name']
-
-
-#
-# Power outlet templates
-#
-
-class PowerOutletTemplateSerializer(serializers.ModelSerializer):
+class PowerOutletTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
+    power_port = PowerPortTemplateSerializer(
+        required=False
+    )
+    feed_leg = ChoiceField(
+        choices=POWERFEED_LEG_CHOICES,
+        required=False,
+        allow_null=True
+    )
 
     class Meta:
         model = PowerOutletTemplate
-        fields = ['id', 'device_type', 'name']
+        fields = ['id', 'device_type', 'name', 'power_port', 'feed_leg']
 
 
-class WritablePowerOutletTemplateSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = PowerOutletTemplate
-        fields = ['id', 'device_type', 'name']
-
-
-#
-# Interface templates
-#
-
-class InterfaceTemplateSerializer(serializers.ModelSerializer):
+class InterfaceTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
-    form_factor = ChoiceFieldSerializer(choices=IFACE_FF_CHOICES)
+    type = ChoiceField(choices=IFACE_TYPE_CHOICES, required=False)
+    # TODO: Remove in v2.7 (backward-compatibility for form_factor)
+    form_factor = ChoiceField(choices=IFACE_TYPE_CHOICES, required=False)
 
     class Meta:
         model = InterfaceTemplate
-        fields = ['id', 'device_type', 'name', 'form_factor', 'mgmt_only']
+        fields = ['id', 'device_type', 'name', 'type', 'form_factor', 'mgmt_only']
 
 
-class WritableInterfaceTemplateSerializer(ValidatedModelSerializer):
+class RearPortTemplateSerializer(ValidatedModelSerializer):
+    device_type = NestedDeviceTypeSerializer()
+    type = ChoiceField(choices=PORT_TYPE_CHOICES)
 
     class Meta:
-        model = InterfaceTemplate
-        fields = ['id', 'device_type', 'name', 'form_factor', 'mgmt_only']
+        model = RearPortTemplate
+        fields = ['id', 'device_type', 'name', 'type', 'positions']
 
 
-#
-# Device bay templates
-#
+class FrontPortTemplateSerializer(ValidatedModelSerializer):
+    device_type = NestedDeviceTypeSerializer()
+    type = ChoiceField(choices=PORT_TYPE_CHOICES)
+    rear_port = NestedRearPortTemplateSerializer()
 
-class DeviceBayTemplateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FrontPortTemplate
+        fields = ['id', 'device_type', 'name', 'type', 'rear_port', 'rear_port_position']
+
+
+class DeviceBayTemplateSerializer(ValidatedModelSerializer):
     device_type = NestedDeviceTypeSerializer()
 
     class Meta:
         model = DeviceBayTemplate
         fields = ['id', 'device_type', 'name']
-
-
-class WritableDeviceBayTemplateSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = DeviceBayTemplate
-        fields = ['id', 'device_type', 'name']
-
-
-#
-# Device roles
-#
-
-class DeviceRoleSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = DeviceRole
-        fields = ['id', 'name', 'slug', 'color', 'vm_role']
-
-
-class NestedDeviceRoleSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:devicerole-detail')
-
-    class Meta:
-        model = DeviceRole
-        fields = ['id', 'url', 'name', 'slug']
-
-
-#
-# Platforms
-#
-
-class PlatformSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = Platform
-        fields = ['id', 'name', 'slug', 'napalm_driver', 'rpc_client']
-
-
-class NestedPlatformSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:platform-detail')
-
-    class Meta:
-        model = Platform
-        fields = ['id', 'url', 'name', 'slug']
 
 
 #
 # Devices
 #
 
-# Cannot import ipam.api.NestedIPAddressSerializer due to circular dependency
-class DeviceIPAddressSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='ipam-api:ipaddress-detail')
+class DeviceRoleSerializer(ValidatedModelSerializer):
+    device_count = serializers.IntegerField(read_only=True)
+    virtualmachine_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = IPAddress
-        fields = ['id', 'url', 'family', 'address']
+        model = DeviceRole
+        fields = ['id', 'name', 'slug', 'color', 'vm_role', 'device_count', 'virtualmachine_count']
 
 
-# Cannot import virtualization.api.NestedClusterSerializer due to circular dependency
-class NestedClusterSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='virtualization-api:cluster-detail')
+class PlatformSerializer(ValidatedModelSerializer):
+    manufacturer = NestedManufacturerSerializer(required=False, allow_null=True)
+    device_count = serializers.IntegerField(read_only=True)
+    virtualmachine_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = Cluster
-        fields = ['id', 'url', 'name']
+        model = Platform
+        fields = [
+            'id', 'name', 'slug', 'manufacturer', 'napalm_driver', 'napalm_args', 'device_count',
+            'virtualmachine_count',
+        ]
 
 
-class DeviceSerializer(CustomFieldModelSerializer):
+class DeviceSerializer(TaggitSerializer, CustomFieldModelSerializer):
     device_type = NestedDeviceTypeSerializer()
     device_role = NestedDeviceRoleSerializer()
-    tenant = NestedTenantSerializer()
-    platform = NestedPlatformSerializer()
+    tenant = NestedTenantSerializer(required=False, allow_null=True)
+    platform = NestedPlatformSerializer(required=False, allow_null=True)
     site = NestedSiteSerializer()
-    rack = NestedRackSerializer()
-    face = ChoiceFieldSerializer(choices=RACK_FACE_CHOICES)
-    status = ChoiceFieldSerializer(choices=STATUS_CHOICES)
-    primary_ip = DeviceIPAddressSerializer()
-    primary_ip4 = DeviceIPAddressSerializer()
-    primary_ip6 = DeviceIPAddressSerializer()
+    rack = NestedRackSerializer(required=False, allow_null=True)
+    face = ChoiceField(choices=RACK_FACE_CHOICES, required=False, allow_null=True)
+    status = ChoiceField(choices=DEVICE_STATUS_CHOICES, required=False)
+    primary_ip = NestedIPAddressSerializer(read_only=True)
+    primary_ip4 = NestedIPAddressSerializer(required=False, allow_null=True)
+    primary_ip6 = NestedIPAddressSerializer(required=False, allow_null=True)
     parent_device = serializers.SerializerMethodField()
-    cluster = NestedClusterSerializer()
+    cluster = NestedClusterSerializer(required=False, allow_null=True)
+    virtual_chassis = NestedVirtualChassisSerializer(required=False, allow_null=True)
+    tags = TagListSerializerField(required=False)
 
     class Meta:
         model = Device
         fields = [
             'id', 'name', 'display_name', 'device_type', 'device_role', 'tenant', 'platform', 'serial', 'asset_tag',
             'site', 'rack', 'position', 'face', 'parent_device', 'status', 'primary_ip', 'primary_ip4', 'primary_ip6',
-            'cluster', 'comments', 'custom_fields',
-        ]
-
-    def get_parent_device(self, obj):
-        try:
-            device_bay = obj.parent_bay
-        except DeviceBay.DoesNotExist:
-            return None
-        context = {'request': self.context['request']}
-        data = NestedDeviceSerializer(instance=device_bay.device, context=context).data
-        data['device_bay'] = NestedDeviceBaySerializer(instance=device_bay, context=context).data
-        return data
-
-
-class WritableDeviceSerializer(CustomFieldModelSerializer):
-
-    class Meta:
-        model = Device
-        fields = [
-            'id', 'name', 'device_type', 'device_role', 'tenant', 'platform', 'serial', 'asset_tag', 'site', 'rack',
-            'position', 'face', 'status', 'primary_ip4', 'primary_ip6', 'cluster', 'comments', 'custom_fields',
+            'cluster', 'virtual_chassis', 'vc_position', 'vc_priority', 'comments', 'local_context_data', 'tags',
+            'custom_fields', 'created', 'last_updated',
         ]
         validators = []
 
@@ -509,232 +338,268 @@ class WritableDeviceSerializer(CustomFieldModelSerializer):
             validator(data)
 
         # Enforce model validation
-        super(WritableDeviceSerializer, self).validate(data)
+        super().validate(data)
 
         return data
 
-
-#
-# Console server ports
-#
-
-class ConsoleServerPortSerializer(serializers.ModelSerializer):
-    device = NestedDeviceSerializer()
-
-    class Meta:
-        model = ConsoleServerPort
-        fields = ['id', 'device', 'name', 'connected_console']
-        read_only_fields = ['connected_console']
-
-
-class WritableConsoleServerPortSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = ConsoleServerPort
-        fields = ['id', 'device', 'name']
-
-
-#
-# Console ports
-#
-
-class ConsolePortSerializer(serializers.ModelSerializer):
-    device = NestedDeviceSerializer()
-    cs_port = ConsoleServerPortSerializer()
-
-    class Meta:
-        model = ConsolePort
-        fields = ['id', 'device', 'name', 'cs_port', 'connection_status']
-
-
-class WritableConsolePortSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = ConsolePort
-        fields = ['id', 'device', 'name', 'cs_port', 'connection_status']
-
-
-#
-# Power outlets
-#
-
-class PowerOutletSerializer(serializers.ModelSerializer):
-    device = NestedDeviceSerializer()
-
-    class Meta:
-        model = PowerOutlet
-        fields = ['id', 'device', 'name', 'connected_port']
-        read_only_fields = ['connected_port']
-
-
-class WritablePowerOutletSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = PowerOutlet
-        fields = ['id', 'device', 'name']
-
-
-#
-# Power ports
-#
-
-class PowerPortSerializer(serializers.ModelSerializer):
-    device = NestedDeviceSerializer()
-    power_outlet = PowerOutletSerializer()
-
-    class Meta:
-        model = PowerPort
-        fields = ['id', 'device', 'name', 'power_outlet', 'connection_status']
-
-
-class WritablePowerPortSerializer(ValidatedModelSerializer):
-
-    class Meta:
-        model = PowerPort
-        fields = ['id', 'device', 'name', 'power_outlet', 'connection_status']
-
-
-#
-# Interfaces
-#
-
-class NestedInterfaceSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:interface-detail')
-
-    class Meta:
-        model = Interface
-        fields = ['id', 'url', 'name']
-
-
-class InterfaceNestedCircuitSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='circuits-api:circuit-detail')
-
-    class Meta:
-        model = Circuit
-        fields = ['id', 'url', 'cid']
-
-
-class InterfaceCircuitTerminationSerializer(serializers.ModelSerializer):
-    circuit = InterfaceNestedCircuitSerializer()
-
-    class Meta:
-        model = CircuitTermination
-        fields = [
-            'id', 'circuit', 'term_side', 'port_speed', 'upstream_speed', 'xconnect_id', 'pp_info',
-        ]
-
-
-class InterfaceSerializer(serializers.ModelSerializer):
-    device = NestedDeviceSerializer()
-    form_factor = ChoiceFieldSerializer(choices=IFACE_FF_CHOICES)
-    lag = NestedInterfaceSerializer()
-    is_connected = serializers.SerializerMethodField(read_only=True)
-    interface_connection = serializers.SerializerMethodField(read_only=True)
-    circuit_termination = InterfaceCircuitTerminationSerializer()
-
-    class Meta:
-        model = Interface
-        fields = [
-            'id', 'device', 'name', 'form_factor', 'enabled', 'lag', 'mtu', 'mac_address', 'mgmt_only', 'description',
-            'is_connected', 'interface_connection', 'circuit_termination',
-        ]
-
-    def get_is_connected(self, obj):
-        """
-        Return True if the interface has a connected interface or circuit termination.
-        """
-        if obj.connection:
-            return True
+    @swagger_serializer_method(serializer_or_field=NestedDeviceSerializer)
+    def get_parent_device(self, obj):
         try:
-            circuit_termination = obj.circuit_termination
-            return True
-        except CircuitTermination.DoesNotExist:
-            pass
-        return False
-
-    def get_interface_connection(self, obj):
-        if obj.connection:
-            return OrderedDict((
-                ('interface', PeerInterfaceSerializer(obj.connected_interface, context=self.context).data),
-                ('status', obj.connection.connection_status),
-            ))
-        return None
+            device_bay = obj.parent_bay
+        except DeviceBay.DoesNotExist:
+            return None
+        context = {'request': self.context['request']}
+        data = NestedDeviceSerializer(instance=device_bay.device, context=context).data
+        data['device_bay'] = NestedDeviceBaySerializer(instance=device_bay, context=context).data
+        return data
 
 
-class PeerInterfaceSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:interface-detail')
+class DeviceWithConfigContextSerializer(DeviceSerializer):
+    config_context = serializers.SerializerMethodField()
+
+    class Meta(DeviceSerializer.Meta):
+        fields = [
+            'id', 'name', 'display_name', 'device_type', 'device_role', 'tenant', 'platform', 'serial', 'asset_tag',
+            'site', 'rack', 'position', 'face', 'parent_device', 'status', 'primary_ip', 'primary_ip4', 'primary_ip6',
+            'cluster', 'virtual_chassis', 'vc_position', 'vc_priority', 'comments', 'local_context_data', 'tags',
+            'custom_fields', 'config_context', 'created', 'last_updated',
+        ]
+
+    @swagger_serializer_method(serializer_or_field=serializers.DictField)
+    def get_config_context(self, obj):
+        return obj.get_config_context()
+
+
+class ConsoleServerPortSerializer(TaggitSerializer, ConnectedEndpointSerializer):
     device = NestedDeviceSerializer()
-    form_factor = ChoiceFieldSerializer(choices=IFACE_FF_CHOICES)
-    lag = NestedInterfaceSerializer()
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
+
+    class Meta:
+        model = ConsoleServerPort
+        fields = [
+            'id', 'device', 'name', 'description', 'connected_endpoint_type', 'connected_endpoint', 'connection_status',
+            'cable', 'tags',
+        ]
+
+
+class ConsolePortSerializer(TaggitSerializer, ConnectedEndpointSerializer):
+    device = NestedDeviceSerializer()
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
+
+    class Meta:
+        model = ConsolePort
+        fields = [
+            'id', 'device', 'name', 'description', 'connected_endpoint_type', 'connected_endpoint', 'connection_status',
+            'cable', 'tags',
+        ]
+
+
+class PowerOutletSerializer(TaggitSerializer, ConnectedEndpointSerializer):
+    device = NestedDeviceSerializer()
+    power_port = NestedPowerPortSerializer(
+        required=False
+    )
+    feed_leg = ChoiceField(
+        choices=POWERFEED_LEG_CHOICES,
+        required=False,
+        allow_null=True
+    )
+    cable = NestedCableSerializer(
+        read_only=True
+    )
+    tags = TagListSerializerField(
+        required=False
+    )
+
+    class Meta:
+        model = PowerOutlet
+        fields = [
+            'id', 'device', 'name', 'power_port', 'feed_leg', 'description', 'connected_endpoint_type',
+            'connected_endpoint', 'connection_status', 'cable', 'tags',
+        ]
+
+
+class PowerPortSerializer(TaggitSerializer, ConnectedEndpointSerializer):
+    device = NestedDeviceSerializer()
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
+
+    class Meta:
+        model = PowerPort
+        fields = [
+            'id', 'device', 'name', 'maximum_draw', 'allocated_draw', 'description', 'connected_endpoint_type',
+            'connected_endpoint', 'connection_status', 'cable', 'tags',
+        ]
+
+
+class InterfaceSerializer(TaggitSerializer, ConnectedEndpointSerializer):
+    device = NestedDeviceSerializer()
+    type = ChoiceField(choices=IFACE_TYPE_CHOICES, required=False)
+    # TODO: Remove in v2.7 (backward-compatibility for form_factor)
+    form_factor = ChoiceField(choices=IFACE_TYPE_CHOICES, required=False)
+    lag = NestedInterfaceSerializer(required=False, allow_null=True)
+    mode = ChoiceField(choices=IFACE_MODE_CHOICES, required=False, allow_null=True)
+    untagged_vlan = NestedVLANSerializer(required=False, allow_null=True)
+    tagged_vlans = SerializedPKRelatedField(
+        queryset=VLAN.objects.all(),
+        serializer=NestedVLANSerializer,
+        required=False,
+        many=True
+    )
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
 
     class Meta:
         model = Interface
         fields = [
-            'id', 'url', 'device', 'name', 'form_factor', 'enabled', 'lag', 'mtu', 'mac_address', 'mgmt_only',
-            'description',
+            'id', 'device', 'name', 'type', 'form_factor', 'enabled', 'lag', 'mtu', 'mac_address', 'mgmt_only',
+            'description', 'connected_endpoint_type', 'connected_endpoint', 'connection_status', 'cable', 'mode',
+            'untagged_vlan', 'tagged_vlans', 'tags', 'count_ipaddresses',
         ]
 
+    # TODO: This validation should be handled by Interface.clean()
+    def validate(self, data):
 
-class WritableInterfaceSerializer(ValidatedModelSerializer):
+        # All associated VLANs be global or assigned to the parent device's site.
+        device = self.instance.device if self.instance else data.get('device')
+        untagged_vlan = data.get('untagged_vlan')
+        if untagged_vlan and untagged_vlan.site not in [device.site, None]:
+            raise serializers.ValidationError({
+                'untagged_vlan': "VLAN {} must belong to the same site as the interface's parent device, or it must be "
+                                 "global.".format(untagged_vlan)
+            })
+        for vlan in data.get('tagged_vlans', []):
+            if vlan.site not in [device.site, None]:
+                raise serializers.ValidationError({
+                    'tagged_vlans': "VLAN {} must belong to the same site as the interface's parent device, or it must "
+                                    "be global.".format(vlan)
+                })
 
-    class Meta:
-        model = Interface
-        fields = [
-            'id', 'device', 'name', 'form_factor', 'enabled', 'lag', 'mtu', 'mac_address', 'mgmt_only', 'description',
-        ]
+        return super().validate(data)
 
 
-#
-# Device bays
-#
-
-class DeviceBaySerializer(serializers.ModelSerializer):
+class RearPortSerializer(TaggitSerializer, ValidatedModelSerializer):
     device = NestedDeviceSerializer()
-    installed_device = NestedDeviceSerializer()
+    type = ChoiceField(choices=PORT_TYPE_CHOICES)
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
 
     class Meta:
-        model = DeviceBay
-        fields = ['id', 'device', 'name', 'installed_device']
+        model = RearPort
+        fields = ['id', 'device', 'name', 'type', 'positions', 'description', 'cable', 'tags']
 
 
-class NestedDeviceBaySerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:devicebay-detail')
+class FrontPortRearPortSerializer(WritableNestedSerializer):
+    """
+    NestedRearPortSerializer but with parent device omitted (since front and rear ports must belong to same device)
+    """
+    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:rearport-detail')
 
     class Meta:
-        model = DeviceBay
+        model = RearPort
         fields = ['id', 'url', 'name']
 
 
-class WritableDeviceBaySerializer(ValidatedModelSerializer):
+class FrontPortSerializer(TaggitSerializer, ValidatedModelSerializer):
+    device = NestedDeviceSerializer()
+    type = ChoiceField(choices=PORT_TYPE_CHOICES)
+    rear_port = FrontPortRearPortSerializer()
+    cable = NestedCableSerializer(read_only=True)
+    tags = TagListSerializerField(required=False)
+
+    class Meta:
+        model = FrontPort
+        fields = ['id', 'device', 'name', 'type', 'rear_port', 'rear_port_position', 'description', 'cable', 'tags']
+
+
+class DeviceBaySerializer(TaggitSerializer, ValidatedModelSerializer):
+    device = NestedDeviceSerializer()
+    installed_device = NestedDeviceSerializer(required=False, allow_null=True)
+    tags = TagListSerializerField(required=False)
 
     class Meta:
         model = DeviceBay
-        fields = ['id', 'device', 'name', 'installed_device']
+        fields = ['id', 'device', 'name', 'description', 'installed_device', 'tags']
 
 
 #
 # Inventory items
 #
 
-class InventoryItemSerializer(serializers.ModelSerializer):
+class InventoryItemSerializer(TaggitSerializer, ValidatedModelSerializer):
     device = NestedDeviceSerializer()
-    manufacturer = NestedManufacturerSerializer()
+    # Provide a default value to satisfy UniqueTogetherValidator
+    parent = serializers.PrimaryKeyRelatedField(queryset=InventoryItem.objects.all(), allow_null=True, default=None)
+    manufacturer = NestedManufacturerSerializer(required=False, allow_null=True, default=None)
+    tags = TagListSerializerField(required=False)
 
     class Meta:
         model = InventoryItem
         fields = [
             'id', 'device', 'parent', 'name', 'manufacturer', 'part_id', 'serial', 'asset_tag', 'discovered',
-            'description',
+            'description', 'tags',
         ]
 
 
-class WritableInventoryItemSerializer(ValidatedModelSerializer):
+#
+# Cables
+#
+
+class CableSerializer(ValidatedModelSerializer):
+    termination_a_type = ContentTypeField(
+        queryset=ContentType.objects.filter(model__in=CABLE_TERMINATION_TYPES)
+    )
+    termination_b_type = ContentTypeField(
+        queryset=ContentType.objects.filter(model__in=CABLE_TERMINATION_TYPES)
+    )
+    termination_a = serializers.SerializerMethodField(read_only=True)
+    termination_b = serializers.SerializerMethodField(read_only=True)
+    status = ChoiceField(choices=CONNECTION_STATUS_CHOICES, required=False)
+    length_unit = ChoiceField(choices=CABLE_LENGTH_UNIT_CHOICES, required=False, allow_null=True)
 
     class Meta:
-        model = InventoryItem
+        model = Cable
         fields = [
-            'id', 'device', 'parent', 'name', 'manufacturer', 'part_id', 'serial', 'asset_tag', 'discovered',
-            'description',
+            'id', 'termination_a_type', 'termination_a_id', 'termination_a', 'termination_b_type', 'termination_b_id',
+            'termination_b', 'type', 'status', 'label', 'color', 'length', 'length_unit',
+        ]
+
+    def _get_termination(self, obj, side):
+        """
+        Serialize a nested representation of a termination.
+        """
+        if side.lower() not in ['a', 'b']:
+            raise ValueError("Termination side must be either A or B.")
+        termination = getattr(obj, 'termination_{}'.format(side.lower()))
+        if termination is None:
+            return None
+        serializer = get_serializer_for_model(termination, prefix='Nested')
+        context = {'request': self.context['request']}
+        data = serializer(termination, context=context).data
+
+        return data
+
+    @swagger_serializer_method(serializer_or_field=serializers.DictField)
+    def get_termination_a(self, obj):
+        return self._get_termination(obj, 'a')
+
+    @swagger_serializer_method(serializer_or_field=serializers.DictField)
+    def get_termination_b(self, obj):
+        return self._get_termination(obj, 'b')
+
+
+class TracedCableSerializer(serializers.ModelSerializer):
+    """
+    Used only while tracing a cable path.
+    """
+    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:cable-detail')
+
+    class Meta:
+        model = Cable
+        fields = [
+            'id', 'url', 'type', 'status', 'label', 'color', 'length', 'length_unit',
         ]
 
 
@@ -742,26 +607,83 @@ class WritableInventoryItemSerializer(ValidatedModelSerializer):
 # Interface connections
 #
 
-class InterfaceConnectionSerializer(serializers.ModelSerializer):
-    interface_a = PeerInterfaceSerializer()
-    interface_b = PeerInterfaceSerializer()
-    connection_status = ChoiceFieldSerializer(choices=CONNECTION_STATUS_CHOICES)
+class InterfaceConnectionSerializer(ValidatedModelSerializer):
+    interface_a = serializers.SerializerMethodField()
+    interface_b = NestedInterfaceSerializer(source='connected_endpoint')
+    connection_status = ChoiceField(choices=CONNECTION_STATUS_CHOICES, required=False)
 
     class Meta:
-        model = InterfaceConnection
-        fields = ['id', 'interface_a', 'interface_b', 'connection_status']
+        model = Interface
+        fields = ['interface_a', 'interface_b', 'connection_status']
+
+    @swagger_serializer_method(serializer_or_field=NestedInterfaceSerializer)
+    def get_interface_a(self, obj):
+        context = {'request': self.context['request']}
+        return NestedInterfaceSerializer(instance=obj, context=context).data
 
 
-class NestedInterfaceConnectionSerializer(serializers.ModelSerializer):
-    url = serializers.HyperlinkedIdentityField(view_name='dcim-api:interfaceconnection-detail')
+#
+# Virtual chassis
+#
+
+class VirtualChassisSerializer(TaggitSerializer, ValidatedModelSerializer):
+    master = NestedDeviceSerializer()
+    tags = TagListSerializerField(required=False)
+    member_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = InterfaceConnection
-        fields = ['id', 'url', 'connection_status']
+        model = VirtualChassis
+        fields = ['id', 'master', 'domain', 'tags', 'member_count']
 
 
-class WritableInterfaceConnectionSerializer(ValidatedModelSerializer):
+#
+# Power panels
+#
+
+class PowerPanelSerializer(ValidatedModelSerializer):
+    site = NestedSiteSerializer()
+    rack_group = NestedRackGroupSerializer(
+        required=False,
+        allow_null=True,
+        default=None
+    )
+    powerfeed_count = serializers.IntegerField(read_only=True)
 
     class Meta:
-        model = InterfaceConnection
-        fields = ['id', 'interface_a', 'interface_b', 'connection_status']
+        model = PowerPanel
+        fields = ['id', 'site', 'rack_group', 'name', 'powerfeed_count']
+
+
+class PowerFeedSerializer(TaggitSerializer, CustomFieldModelSerializer):
+    power_panel = NestedPowerPanelSerializer()
+    rack = NestedRackSerializer(
+        required=False,
+        allow_null=True,
+        default=None
+    )
+    type = ChoiceField(
+        choices=POWERFEED_TYPE_CHOICES,
+        default=POWERFEED_TYPE_PRIMARY
+    )
+    status = ChoiceField(
+        choices=POWERFEED_STATUS_CHOICES,
+        default=POWERFEED_STATUS_ACTIVE
+    )
+    supply = ChoiceField(
+        choices=POWERFEED_SUPPLY_CHOICES,
+        default=POWERFEED_SUPPLY_AC
+    )
+    phase = ChoiceField(
+        choices=POWERFEED_PHASE_CHOICES,
+        default=POWERFEED_PHASE_SINGLE
+    )
+    tags = TagListSerializerField(
+        required=False
+    )
+
+    class Meta:
+        model = PowerFeed
+        fields = [
+            'id', 'power_panel', 'rack', 'name', 'status', 'type', 'supply', 'phase', 'voltage', 'amperage',
+            'max_utilization', 'comments', 'tags', 'custom_fields', 'created', 'last_updated',
+        ]

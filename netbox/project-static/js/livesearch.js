@@ -24,7 +24,7 @@ $(document).ready(function() {
         source: function(request, response) {
             $.ajax({
                 type: 'GET',
-                url: search_field.attr('data-source'),
+                url: search_field.attr('data-source') + '?brief=1',
                 data: search_key + '=' + request.term,
                 success: function(data) {
                     var choices = [];
@@ -42,14 +42,14 @@ $(document).ready(function() {
             event.preventDefault();
             search_field.val(ui.item.label);
             select_fields.val('');
-            select_fields.attr('disabled', 'disabled');
             real_field.empty();
+            select_fields.attr('disabled', 'disabled');
             real_field.append($("<option></option>").attr('value', ui.item.value).text(ui.item.label));
             real_field.change();
             // Disable parent selection fields
             // $('select[filter-for="' + real_field.attr('name') + '"]').val('');
         },
-        minLength: 4,
+        minLength: 3,
         delay: 500
     });
 

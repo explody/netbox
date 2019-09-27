@@ -1,15 +1,71 @@
-from __future__ import unicode_literals
-
 import django_filters
-import itertools
-
 from django import forms
-from django.utils.encoding import force_text
+from django.conf import settings
+from django.db import models
+
+from dcim.forms import MACAddressField
+from extras.models import Tag
+
+
+def multivalue_field_factory(field_class):
+    """
+    Given a form field class, return a subclass capable of accepting multiple values. This allows us to OR on multiple
+    filter values while maintaining the field's built-in validation. Example: GET /api/dcim/devices/?name=foo&name=bar
+    """
+    class NewField(field_class):
+        widget = forms.SelectMultiple
+
+        def to_python(self, value):
+            if not value:
+                return []
+            return [
+                # Only append non-empty values (this avoids e.g. trying to cast '' as an integer)
+                super(field_class, self).to_python(v) for v in value if v
+            ]
+
+    return type('MultiValue{}'.format(field_class.__name__), (NewField,), dict())
 
 
 #
 # Filters
 #
+
+class MultiValueCharFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(forms.CharField)
+
+
+class MultiValueDateFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(forms.DateField)
+
+
+class MultiValueDateTimeFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(forms.DateTimeField)
+
+
+class MultiValueNumberFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(forms.IntegerField)
+
+
+class MultiValueTimeFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(forms.TimeField)
+
+
+class MACAddressFilter(django_filters.CharFilter):
+    field_class = MACAddressField
+
+
+class MultiValueMACAddressFilter(django_filters.MultipleChoiceFilter):
+    field_class = multivalue_field_factory(MACAddressField)
+
+
+class TreeNodeMultipleChoiceFilter(django_filters.ModelMultipleChoiceFilter):
+    """
+    Filters for a set of Models, including all descendant models within a Tree.  Example: [<Region: R1>,<Region: R2>]
+    """
+    def filter(self, qs, value):
+        value = [node.get_descendants(include_self=True) for node in value]
+        return super().filter(qs, value)
+
 
 class NumericInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
     """
@@ -19,49 +75,100 @@ class NumericInFilter(django_filters.BaseInFilter, django_filters.NumberFilter):
 
 
 class NullableCharFieldFilter(django_filters.CharFilter):
-    null_value = 'NULL'
+    """
+    Allow matching on null field values by passing a special string used to signify NULL.
+    """
 
     def filter(self, qs, value):
-        if value != self.null_value:
-            return super(NullableCharFieldFilter, self).filter(qs, value)
-        qs = self.get_method(qs)(**{'{}__isnull'.format(self.name): True})
+        if value != settings.FILTERS_NULL_CHOICE_VALUE:
+            return super().filter(qs, value)
+        qs = self.get_method(qs)(**{'{}__isnull'.format(self.field_name): True})
         return qs.distinct() if self.distinct else qs
 
 
-class NullableModelMultipleChoiceField(forms.ModelMultipleChoiceField):
+class TagFilter(django_filters.ModelMultipleChoiceFilter):
     """
-    This field operates like a normal ModelMultipleChoiceField except that it allows for one additional choice which is
-    used to represent a value of Null. This is accomplished by creating a new iterator which first yields the null
-    choice before entering the queryset iterator, and by ignoring the null choice during cleaning. The effect is similar
-    to defining a MultipleChoiceField with:
-
-        choices = [(0, 'None')] + [(x.id, x) for x in Foo.objects.all()]
-
-    However, the above approach forces immediate evaluation of the queryset, which can cause issues when calculating
-    database migrations.
+    Match on one or more assigned tags. If multiple tags are specified (e.g. ?tag=foo&tag=bar), the queryset is filtered
+    to objects matching all tags.
     """
-    iterator = forms.models.ModelChoiceIterator
+    def __init__(self, *args, **kwargs):
 
-    def __init__(self, null_value=0, null_label='None', *args, **kwargs):
-        self.null_value = null_value
-        self.null_label = null_label
-        super(NullableModelMultipleChoiceField, self).__init__(*args, **kwargs)
+        kwargs.setdefault('field_name', 'tags__slug')
+        kwargs.setdefault('to_field_name', 'slug')
+        kwargs.setdefault('conjoined', True)
+        kwargs.setdefault('queryset', Tag.objects.all())
 
-    def _get_choices(self):
-        if hasattr(self, '_choices'):
-            return self._choices
-        # Prepend the null choice to the queryset iterator
-        return itertools.chain(
-            [(self.null_value, self.null_label)],
-            self.iterator(self),
+        super().__init__(*args, **kwargs)
+
+
+#
+# FilterSets
+#
+
+class NameSlugSearchFilterSet(django_filters.FilterSet):
+    """
+    A base class for adding the search method to models which only expose the `name` and `slug` fields
+    """
+    q = django_filters.CharFilter(
+        method='search',
+        label='Search',
+    )
+
+    def search(self, queryset, name, value):
+        if not value.strip():
+            return queryset
+        return queryset.filter(
+            models.Q(name__icontains=value) |
+            models.Q(slug__icontains=value)
         )
-    choices = property(_get_choices, forms.ChoiceField._set_choices)
 
-    def clean(self, value):
-        # Strip all instances of the null value before cleaning
-        if value is not None:
-            stripped_value = [x for x in value if x != force_text(self.null_value)]
-        else:
-            stripped_value = value
-        super(NullableModelMultipleChoiceField, self).clean(stripped_value)
-        return value
+
+#
+# Update default filters
+#
+
+FILTER_DEFAULTS = django_filters.filterset.FILTER_FOR_DBFIELD_DEFAULTS
+FILTER_DEFAULTS.update({
+    models.AutoField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.CharField: {
+        'filter_class': MultiValueCharFilter
+    },
+    models.DateField: {
+        'filter_class': MultiValueDateFilter
+    },
+    models.DateTimeField: {
+        'filter_class': MultiValueDateTimeFilter
+    },
+    models.DecimalField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.EmailField: {
+        'filter_class': MultiValueCharFilter
+    },
+    models.FloatField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.IntegerField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.PositiveIntegerField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.PositiveSmallIntegerField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.SlugField: {
+        'filter_class': MultiValueCharFilter
+    },
+    models.SmallIntegerField: {
+        'filter_class': MultiValueNumberFilter
+    },
+    models.TimeField: {
+        'filter_class': MultiValueTimeFilter
+    },
+    models.URLField: {
+        'filter_class': MultiValueCharFilter
+    },
+})

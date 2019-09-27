@@ -1,23 +1,24 @@
-from __future__ import unicode_literals
-
 import django_filters
-
 from django.db.models import Q
 
-from .models import Secret, SecretRole
 from dcim.models import Device
-from utilities.filters import NumericInFilter
+from extras.filters import CustomFieldFilterSet
+from utilities.filters import NameSlugSearchFilterSet, NumericInFilter, TagFilter
+from .models import Secret, SecretRole
 
 
-class SecretRoleFilter(django_filters.FilterSet):
+class SecretRoleFilter(NameSlugSearchFilterSet):
 
     class Meta:
         model = SecretRole
-        fields = ['name', 'slug']
+        fields = ['id', 'name', 'slug']
 
 
-class SecretFilter(django_filters.FilterSet):
-    id__in = NumericInFilter(name='id', lookup_expr='in')
+class SecretFilter(CustomFieldFilterSet):
+    id__in = NumericInFilter(
+        field_name='id',
+        lookup_expr='in'
+    )
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -27,7 +28,7 @@ class SecretFilter(django_filters.FilterSet):
         label='Role (ID)',
     )
     role = django_filters.ModelMultipleChoiceFilter(
-        name='role__slug',
+        field_name='role__slug',
         queryset=SecretRole.objects.all(),
         to_field_name='slug',
         label='Role (slug)',
@@ -37,11 +38,12 @@ class SecretFilter(django_filters.FilterSet):
         label='Device (ID)',
     )
     device = django_filters.ModelMultipleChoiceFilter(
-        name='device__name',
+        field_name='device__name',
         queryset=Device.objects.all(),
         to_field_name='name',
         label='Device (name)',
     )
+    tag = TagFilter()
 
     class Meta:
         model = Secret

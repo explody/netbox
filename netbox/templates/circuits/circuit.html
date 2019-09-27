@@ -1,44 +1,63 @@
 {% extends '_base.html' %}
+{% load custom_links %}
 {% load helpers %}
 
+{% block title %}{{ circuit }}{% endblock %}
+
+{% block header %}
+    <div class="row noprint">
+        <div class="col-sm-8 col-md-9">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'circuits:circuit_list' %}">Circuits</a></li>
+                <li><a href="{% url 'circuits:circuit_list' %}?provider={{ circuit.provider.slug }}">{{ circuit.provider }}</a></li>
+                <li>{{ circuit.cid }}</li>
+            </ol>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            <form action="{% url 'circuits:circuit_list' %}" method="get">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" />
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa fa-search" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="pull-right noprint">
+        {% if perms.circuits.change_circuit %}
+            <a href="{% url 'circuits:circuit_edit' pk=circuit.pk %}" class="btn btn-warning">
+                <span class="fa fa-pencil" aria-hidden="true"></span>
+                Edit this circuit
+            </a>
+        {% endif %}
+        {% if perms.circuits.delete_circuit %}
+            <a href="{% url 'circuits:circuit_delete' pk=circuit.pk %}" class="btn btn-danger">
+                <span class="fa fa-trash" aria-hidden="true"></span>
+                Delete this circuit
+            </a>
+        {% endif %}
+    </div>
+    <h1>{{ circuit }}</h1>
+    {% include 'inc/created_updated.html' with obj=circuit %}
+    <div class="pull-right noprint">
+        {% custom_links circuit %}
+    </div>
+    <ul class="nav nav-tabs">
+        <li role="presentation"{% if not active_tab %} class="active"{% endif %}>
+            <a href="{{ circuit.get_absolute_url }}">Circuit</a>
+        </li>
+        {% if perms.extras.view_objectchange %}
+            <li role="presentation"{% if active_tab == 'changelog' %} class="active"{% endif %}>
+                <a href="{% url 'circuits:circuit_changelog' pk=circuit.pk %}">Changelog</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-sm-8 col-md-9">
-        <ol class="breadcrumb">
-            <li><a href="{% url 'circuits:circuit_list' %}">Circuits</a></li>
-            <li><a href="{% url 'circuits:circuit_list' %}?provider={{ circuit.provider.slug }}">{{ circuit.provider }}</a></li>
-            <li>{{ circuit.cid }}</li>
-        </ol>
-    </div>
-    <div class="col-sm-4 col-md-3">
-        <form action="{% url 'circuits:circuit_list' %}" method="get">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" />
-                <span class="input-group-btn">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="fa fa-search" aria-hidden="true"></span>
-                    </button>
-                </span>
-            </div>
-        </form>
-    </div>
-</div>
-<div class="pull-right">
-    {% if perms.circuits.change_circuit %}
-		<a href="{% url 'circuits:circuit_edit' pk=circuit.pk %}" class="btn btn-warning">
-			<span class="fa fa-pencil" aria-hidden="true"></span>
-			Edit this circuit
-		</a>
-    {% endif %}
-    {% if perms.circuits.delete_circuit %}
-		<a href="{% url 'circuits:circuit_delete' pk=circuit.pk %}" class="btn btn-danger">
-			<span class="fa fa-trash" aria-hidden="true"></span>
-			Delete this circuit
-		</a>
-    {% endif %}
-</div>
-<h1>{% block title %}{{ circuit.provider }} - {{ circuit.cid }}{% endblock %}</h1>
-{% include 'inc/created_updated.html' with obj=circuit %}
 <div class="row">
 	<div class="col-md-6">
         <div class="panel panel-default">
@@ -46,6 +65,12 @@
                 <strong>Circuit</strong>
             </div>
             <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        <span class="label label-{{ circuit.get_status_class }}">{{ circuit.get_status_display }}</span>
+                    </td>
+                </tr>
                 <tr>
                     <td>Provider</td>
                     <td>
@@ -76,44 +101,25 @@
                 </tr>
                 <tr>
                     <td>Install Date</td>
-                    <td>
-                        {% if circuit.install_date %}
-                            {{ circuit.install_date }}
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ circuit.install_date|placeholder }}</td>
                 </tr>
                 <tr>
                     <td>Commit Rate</td>
-                    <td>
-                        {% if circuit.commit_rate %}
-                            {{ circuit.commit_rate|humanize_speed }}
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ circuit.commit_rate|humanize_speed|placeholder }}</td>
                 </tr>
                 <tr>
                     <td>Description</td>
-                    <td>
-                        {% if circuit.description %}
-                            {{ circuit.description }}
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ circuit.description|placeholder }}</td>
                 </tr>
             </table>
         </div>
-        {% with circuit.get_custom_fields as custom_fields %}
-            {% include 'inc/custom_fields_panel.html' %}
-        {% endwith %}
+        {% include 'inc/custom_fields_panel.html' with obj=circuit %}
+        {% include 'extras/inc/tags_panel.html' with tags=circuit.tags.all url='circuits:circuit_list' %}
         <div class="panel panel-default">
             <div class="panel-heading">
                 <strong>Comments</strong>
             </div>
-            <div class="panel-body">
+            <div class="panel-body rendered-markdown">
                 {% if circuit.comments %}
                     {{ circuit.comments|gfm }}
                 {% else %}

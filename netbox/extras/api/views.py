@@ -1,18 +1,21 @@
-from __future__ import unicode_literals
-
-from rest_framework.decorators import detail_route
-from rest_framework.exceptions import PermissionDenied
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet, ViewSet
+from collections import OrderedDict
 
 from django.contrib.contenttypes.models import ContentType
+from django.db.models import Count
 from django.http import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.exceptions import PermissionDenied
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet, ViewSet
 
 from extras import filters
-from extras.models import CustomField, ExportTemplate, Graph, ImageAttachment, ReportResult, TopologyMap, UserAction
+from extras.models import (
+    ConfigContext, CustomFieldChoice, ExportTemplate, Graph, ImageAttachment, ObjectChange, ReportResult, TopologyMap,
+    Tag,
+)
 from extras.reports import get_report, get_reports
-from utilities.api import FieldChoicesViewSet, IsAuthenticatedOrLoginNotRequired, WritableSerializerMixin
+from utilities.api import FieldChoicesViewSet, IsAuthenticatedOrLoginNotRequired, ModelViewSet
 from . import serializers
 
 
@@ -22,9 +25,40 @@ from . import serializers
 
 class ExtrasFieldChoicesViewSet(FieldChoicesViewSet):
     fields = (
-        (CustomField, ['type']),
+        (ExportTemplate, ['template_language']),
         (Graph, ['type']),
+        (ObjectChange, ['action']),
     )
+
+
+#
+# Custom field choices
+#
+
+class CustomFieldChoicesViewSet(ViewSet):
+    """
+    """
+    permission_classes = [IsAuthenticatedOrLoginNotRequired]
+
+    def __init__(self, *args, **kwargs):
+        super(CustomFieldChoicesViewSet, self).__init__(*args, **kwargs)
+
+        self._fields = OrderedDict()
+
+        for cfc in CustomFieldChoice.objects.all():
+            self._fields.setdefault(cfc.field.name, {})
+            self._fields[cfc.field.name][cfc.value] = cfc.pk
+
+    def list(self, request):
+        return Response(self._fields)
+
+    def retrieve(self, request, pk):
+        if pk not in self._fields:
+            raise Http404
+        return Response(self._fields[pk])
+
+    def get_view_name(self):
+        return "Custom Field choices"
 
 
 #
@@ -49,7 +83,7 @@ class CustomFieldModelViewSet(ModelViewSet):
                 custom_field_choices[cfc.id] = cfc.value
         custom_field_choices = custom_field_choices
 
-        context = super(CustomFieldModelViewSet, self).get_serializer_context()
+        context = super().get_serializer_context()
         context.update({
             'custom_fields': custom_fields,
             'custom_field_choices': custom_field_choices,
@@ -58,41 +92,39 @@ class CustomFieldModelViewSet(ModelViewSet):
 
     def get_queryset(self):
         # Prefetch custom field values
-        return super(CustomFieldModelViewSet, self).get_queryset().prefetch_related('custom_field_values__field')
+        return super().get_queryset().prefetch_related('custom_field_values__field')
 
 
 #
 # Graphs
 #
 
-class GraphViewSet(WritableSerializerMixin, ModelViewSet):
+class GraphViewSet(ModelViewSet):
     queryset = Graph.objects.all()
     serializer_class = serializers.GraphSerializer
-    write_serializer_class = serializers.WritableGraphSerializer
-    filter_class = filters.GraphFilter
+    filterset_class = filters.GraphFilter
 
 
 #
 # Export templates
 #
 
-class ExportTemplateViewSet(WritableSerializerMixin, ModelViewSet):
+class ExportTemplateViewSet(ModelViewSet):
     queryset = ExportTemplate.objects.all()
     serializer_class = serializers.ExportTemplateSerializer
-    filter_class = filters.ExportTemplateFilter
+    filterset_class = filters.ExportTemplateFilter
 
 
 #
 # Topology maps
 #
 
-class TopologyMapViewSet(WritableSerializerMixin, ModelViewSet):
-    queryset = TopologyMap.objects.select_related('site')
+class TopologyMapViewSet(ModelViewSet):
+    queryset = TopologyMap.objects.prefetch_related('site')
     serializer_class = serializers.TopologyMapSerializer
-    write_serializer_class = serializers.WritableTopologyMapSerializer
-    filter_class = filters.TopologyMapFilter
+    filterset_class = filters.TopologyMapFilter
 
-    @detail_route()
+    @action(detail=True)
     def render(self, request, pk):
 
         tmap = get_object_or_404(TopologyMap, pk=pk)
@@ -100,10 +132,9 @@ class TopologyMapViewSet(WritableSerializerMixin, ModelViewSet):
 
         try:
             data = tmap.render(img_format=img_format)
-        except:
+        except Exception as e:
             return HttpResponse(
-                "There was an error generating the requested graph. Ensure that the GraphViz executables have been "
-                "installed correctly."
+                "There was an error generating the requested graph: %s" % e
             )
 
         response = HttpResponse(data, content_type='image/{}'.format(img_format))
@@ -113,13 +144,36 @@ class TopologyMapViewSet(WritableSerializerMixin, ModelViewSet):
 
 
 #
+# Tags
+#
+
+class TagViewSet(ModelViewSet):
+    queryset = Tag.objects.annotate(
+        tagged_items=Count('extras_taggeditem_items', distinct=True)
+    )
+    serializer_class = serializers.TagSerializer
+    filterset_class = filters.TagFilter
+
+
+#
 # Image attachments
 #
 
-class ImageAttachmentViewSet(WritableSerializerMixin, ModelViewSet):
+class ImageAttachmentViewSet(ModelViewSet):
     queryset = ImageAttachment.objects.all()
     serializer_class = serializers.ImageAttachmentSerializer
-    write_serializer_class = serializers.WritableImageAttachmentSerializer
+
+
+#
+# Config contexts
+#
+
+class ConfigContextViewSet(ModelViewSet):
+    queryset = ConfigContext.objects.prefetch_related(
+        'regions', 'sites', 'roles', 'platforms', 'tenant_groups', 'tenants',
+    )
+    serializer_class = serializers.ConfigContextSerializer
+    filterset_class = filters.ConfigContextFilter
 
 
 #
@@ -179,7 +233,7 @@ class ReportViewSet(ViewSet):
 
         return Response(serializer.data)
 
-    @detail_route(methods=['post'])
+    @action(detail=True, methods=['post'])
     def run(self, request, pk):
         """
         Run a Report and create a new ReportResult, overwriting any previous result for the Report.
@@ -199,13 +253,13 @@ class ReportViewSet(ViewSet):
 
 
 #
-# User activity
+# Change logging
 #
 
-class RecentActivityViewSet(ReadOnlyModelViewSet):
+class ObjectChangeViewSet(ReadOnlyModelViewSet):
     """
-    List all UserActions to provide a log of recent activity.
+    Retrieve a list of recent changes.
     """
-    queryset = UserAction.objects.all()
-    serializer_class = serializers.UserActionSerializer
-    filter_class = filters.UserActionFilter
+    queryset = ObjectChange.objects.prefetch_related('user')
+    serializer_class = serializers.ObjectChangeSerializer
+    filterset_class = filters.ObjectChangeFilter

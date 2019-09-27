@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 
 # IP address families
 AF_CHOICES = (
@@ -49,6 +47,16 @@ IPADDRESS_ROLE_CHOICES = (
     (IPADDRESS_ROLE_HSRP, 'HSRP'),
     (IPADDRESS_ROLE_GLBP, 'GLBP'),
     (IPADDRESS_ROLE_CARP, 'CARP'),
+)
+
+IPADDRESS_ROLES_NONUNIQUE = (
+    # IPAddress roles which are exempt from unique address enforcement
+    IPADDRESS_ROLE_ANYCAST,
+    IPADDRESS_ROLE_VIP,
+    IPADDRESS_ROLE_VRRP,
+    IPADDRESS_ROLE_HSRP,
+    IPADDRESS_ROLE_GLBP,
+    IPADDRESS_ROLE_CARP,
 )
 
 # VLAN statuses

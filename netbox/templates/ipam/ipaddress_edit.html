@@ -1,5 +1,5 @@
 {% extends 'utilities/obj_edit.html' %}
-{% load static from staticfiles %}
+{% load static %}
 {% load form_helpers %}
 {% load helpers %}
 
@@ -17,6 +17,7 @@
             {% render_field form.status %}
             {% render_field form.role %}
             {% render_field form.vrf %}
+            {% render_field form.dns_name %}
             {% render_field form.description %}
         </div>
     </div>
@@ -60,10 +61,16 @@
                     {% render_field form.nat_device %}
                 </div>
                 <div class="tab-pane" id="search">
-                    {% render_field form.livesearch %}
+                    &nbsp;
                 </div>
             </div>
             {% render_field form.nat_inside %}
+        </div>
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading"><strong>Tags</strong></div>
+        <div class="panel-body">
+            {% render_field form.tags %}
         </div>
     </div>
     {% if form.custom_fields %}

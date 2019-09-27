@@ -1,16 +1,15 @@
-from __future__ import unicode_literals
-
 from django.conf import settings
-
 from django.contrib import messages
 from django.contrib.auth import login as auth_login, logout as auth_logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponseRedirect
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+from django.contrib.auth.models import update_last_login
+from django.contrib.auth.signals import user_logged_in
+from django.http import HttpResponseForbidden, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.utils.http import is_safe_url
+from django.views.decorators.debug import sensitive_post_parameters
 from django.views.generic import View
 
 from secrets.forms import UserKeyForm
@@ -28,6 +27,10 @@ class LoginView(View):
 
     def _redirect_for_saml(self, request):
         return HttpResponseRedirect(settings.LOGIN_URL)
+
+    @method_decorator(sensitive_post_parameters('password'))
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
 
     def get(self, request):
         if settings.SAML_ENABLED and settings.SAML_REQUIRED:
@@ -47,8 +50,13 @@ class LoginView(View):
 
             # Determine where to direct user after successful login
             redirect_to = request.POST.get('next', '')
-            if not is_safe_url(url=redirect_to, host=request.get_host()):
+            if not is_safe_url(url=redirect_to, allowed_hosts=request.get_host()):
                 redirect_to = reverse('home')
+
+            # If maintenance mode is enabled, assume the database is read-only, and disable updating the user's
+            # last_login time upon authentication.
+            if settings.MAINTENANCE_MODE:
+                user_logged_in.disconnect(update_last_login, dispatch_uid='update_last_login')
 
             # Authenticate user
             auth_login(request, form.get_user())
@@ -65,6 +73,7 @@ class LogoutView(View):
 
     def get(self, request):
 
+        # Log out the user
         auth_logout(request)
 
         # Don't display this if SAML is required, as the logout landing page is unlikely to be
@@ -79,6 +88,8 @@ class LogoutView(View):
         else:
             redirect_to = reverse('home')
 
+        response.delete_cookie('session_key')
+
         return HttpResponseRedirect(redirect_to)
 
 
@@ -86,8 +97,7 @@ class LogoutView(View):
 # User profiles
 #
 
-@method_decorator(login_required, name='dispatch')
-class ProfileView(View):
+class ProfileView(LoginRequiredMixin, View):
     template_name = 'users/profile.html'
 
     def get(self, request):
@@ -97,8 +107,7 @@ class ProfileView(View):
         })
 
 
-@method_decorator(login_required, name='dispatch')
-class ChangePasswordView(View):
+class ChangePasswordView(LoginRequiredMixin, View):
     template_name = 'users/change_password.html'
 
     def get(self, request):
@@ -123,8 +132,7 @@ class ChangePasswordView(View):
         })
 
 
-@method_decorator(login_required, name='dispatch')
-class UserKeyView(View):
+class UserKeyView(LoginRequiredMixin, View):
     template_name = 'users/userkey.html'
 
     def get(self, request):
@@ -139,17 +147,16 @@ class UserKeyView(View):
         })
 
 
-class UserKeyEditView(View):
+class UserKeyEditView(LoginRequiredMixin, View):
     template_name = 'users/userkey_edit.html'
 
-    @method_decorator(login_required)
     def dispatch(self, request, *args, **kwargs):
         try:
             self.userkey = UserKey.objects.get(user=request.user)
         except UserKey.DoesNotExist:
             self.userkey = UserKey(user=request.user)
 
-        return super(UserKeyEditView, self).dispatch(request, *args, **kwargs)
+        return super().dispatch(request, *args, **kwargs)
 
     def get(self, request):
         form = UserKeyForm(instance=self.userkey)
@@ -176,7 +183,6 @@ class UserKeyEditView(View):
         })
 
 
-@method_decorator(login_required, name='dispatch')
 class SessionKeyDeleteView(LoginRequiredMixin, View):
 
     def get(self, request):
@@ -213,18 +219,6 @@ class SessionKeyDeleteView(LoginRequiredMixin, View):
         })
 
 
-@method_decorator(login_required, name='dispatch')
-class RecentActivityView(View):
-    template_name = 'users/recent_activity.html'
-
-    def get(self, request):
-
-        return render(request, self.template_name, {
-            'recent_activity': request.user.actions.all()[:50],
-            'active_tab': 'recent_activity',
-        })
-
-
 #
 # API tokens
 #
@@ -246,8 +240,12 @@ class TokenEditView(LoginRequiredMixin, View):
     def get(self, request, pk=None):
 
         if pk is not None:
+            if not request.user.has_perm('users.change_token'):
+                return HttpResponseForbidden()
             token = get_object_or_404(Token.objects.filter(user=request.user), pk=pk)
         else:
+            if not request.user.has_perm('users.add_token'):
+                return HttpResponseForbidden()
             token = Token(user=request.user)
 
         form = TokenForm(instance=token)
@@ -289,7 +287,8 @@ class TokenEditView(LoginRequiredMixin, View):
         })
 
 
-class TokenDeleteView(LoginRequiredMixin, View):
+class TokenDeleteView(PermissionRequiredMixin, View):
+    permission_required = 'users.delete_token'
 
     def get(self, request, pk):
 

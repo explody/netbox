@@ -1,23 +1,23 @@
-from __future__ import unicode_literals
-
 import django_filters
-
 from django.db.models import Q
 
 from extras.filters import CustomFieldFilterSet
-from utilities.filters import NumericInFilter
+from utilities.filters import NameSlugSearchFilterSet, NumericInFilter, TagFilter
 from .models import Tenant, TenantGroup
 
 
-class TenantGroupFilter(django_filters.FilterSet):
+class TenantGroupFilter(NameSlugSearchFilterSet):
 
     class Meta:
         model = TenantGroup
-        fields = ['name', 'slug']
+        fields = ['id', 'name', 'slug']
 
 
-class TenantFilter(CustomFieldFilterSet, django_filters.FilterSet):
-    id__in = NumericInFilter(name='id', lookup_expr='in')
+class TenantFilter(CustomFieldFilterSet):
+    id__in = NumericInFilter(
+        field_name='id',
+        lookup_expr='in'
+    )
     q = django_filters.CharFilter(
         method='search',
         label='Search',
@@ -27,21 +27,23 @@ class TenantFilter(CustomFieldFilterSet, django_filters.FilterSet):
         label='Group (ID)',
     )
     group = django_filters.ModelMultipleChoiceFilter(
-        name='group__slug',
+        field_name='group__slug',
         queryset=TenantGroup.objects.all(),
         to_field_name='slug',
         label='Group (slug)',
     )
+    tag = TagFilter()
 
     class Meta:
         model = Tenant
-        fields = ['name']
+        fields = ['name', 'slug']
 
     def search(self, queryset, name, value):
         if not value.strip():
             return queryset
         return queryset.filter(
             Q(name__icontains=value) |
+            Q(slug__icontains=value) |
             Q(description__icontains=value) |
             Q(comments__icontains=value)
         )

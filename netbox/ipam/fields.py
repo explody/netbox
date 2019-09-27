@@ -1,15 +1,9 @@
-from __future__ import unicode_literals
-
-from netaddr import IPNetwork
-
 from django.core.exceptions import ValidationError
 from django.db import models
+from netaddr import AddrFormatError, IPNetwork
 
+from . import lookups
 from .formfields import IPFormField
-from .lookups import (
-    EndsWith, IEndsWith, IRegex, IStartsWith, NetContained, NetContainedOrEqual, NetContains, NetContainsOrEquals,
-    NetHost, NetHostContained, NetMaskLength, Regex, StartsWith,
-)
 
 
 def prefix_validator(prefix):
@@ -22,7 +16,7 @@ class BaseIPField(models.Field):
     def python_type(self):
         return IPNetwork
 
-    def from_db_value(self, value, expression, connection, context):
+    def from_db_value(self, value, expression, connection):
         return self.to_python(value)
 
     def to_python(self, value):
@@ -30,7 +24,9 @@ class BaseIPField(models.Field):
             return value
         try:
             return IPNetwork(value)
-        except ValueError as e:
+        except AddrFormatError as e:
+            raise ValidationError("Invalid IP address format: {}".format(value))
+        except (TypeError, ValueError) as e:
             raise ValidationError(e)
 
     def get_prep_value(self, value):
@@ -44,7 +40,7 @@ class BaseIPField(models.Field):
     def formfield(self, **kwargs):
         defaults = {'form_class': self.form_class()}
         defaults.update(kwargs)
-        return super(BaseIPField, self).formfield(**defaults)
+        return super().formfield(**defaults)
 
 
 class IPNetworkField(BaseIPField):
@@ -58,17 +54,18 @@ class IPNetworkField(BaseIPField):
         return 'cidr'
 
 
-IPNetworkField.register_lookup(EndsWith)
-IPNetworkField.register_lookup(IEndsWith)
-IPNetworkField.register_lookup(StartsWith)
-IPNetworkField.register_lookup(IStartsWith)
-IPNetworkField.register_lookup(Regex)
-IPNetworkField.register_lookup(IRegex)
-IPNetworkField.register_lookup(NetContained)
-IPNetworkField.register_lookup(NetContainedOrEqual)
-IPNetworkField.register_lookup(NetContains)
-IPNetworkField.register_lookup(NetContainsOrEquals)
-IPNetworkField.register_lookup(NetMaskLength)
+IPNetworkField.register_lookup(lookups.IExact)
+IPNetworkField.register_lookup(lookups.EndsWith)
+IPNetworkField.register_lookup(lookups.IEndsWith)
+IPNetworkField.register_lookup(lookups.StartsWith)
+IPNetworkField.register_lookup(lookups.IStartsWith)
+IPNetworkField.register_lookup(lookups.Regex)
+IPNetworkField.register_lookup(lookups.IRegex)
+IPNetworkField.register_lookup(lookups.NetContained)
+IPNetworkField.register_lookup(lookups.NetContainedOrEqual)
+IPNetworkField.register_lookup(lookups.NetContains)
+IPNetworkField.register_lookup(lookups.NetContainsOrEquals)
+IPNetworkField.register_lookup(lookups.NetMaskLength)
 
 
 class IPAddressField(BaseIPField):
@@ -81,16 +78,17 @@ class IPAddressField(BaseIPField):
         return 'inet'
 
 
-IPAddressField.register_lookup(EndsWith)
-IPAddressField.register_lookup(IEndsWith)
-IPAddressField.register_lookup(StartsWith)
-IPAddressField.register_lookup(IStartsWith)
-IPAddressField.register_lookup(Regex)
-IPAddressField.register_lookup(IRegex)
-IPAddressField.register_lookup(NetContained)
-IPAddressField.register_lookup(NetContainedOrEqual)
-IPAddressField.register_lookup(NetContains)
-IPAddressField.register_lookup(NetContainsOrEquals)
-IPAddressField.register_lookup(NetHost)
-IPAddressField.register_lookup(NetHostContained)
-IPAddressField.register_lookup(NetMaskLength)
+IPAddressField.register_lookup(lookups.IExact)
+IPAddressField.register_lookup(lookups.EndsWith)
+IPAddressField.register_lookup(lookups.IEndsWith)
+IPAddressField.register_lookup(lookups.StartsWith)
+IPAddressField.register_lookup(lookups.IStartsWith)
+IPAddressField.register_lookup(lookups.Regex)
+IPAddressField.register_lookup(lookups.IRegex)
+IPAddressField.register_lookup(lookups.NetContained)
+IPAddressField.register_lookup(lookups.NetContainedOrEqual)
+IPAddressField.register_lookup(lookups.NetContains)
+IPAddressField.register_lookup(lookups.NetContainsOrEquals)
+IPAddressField.register_lookup(lookups.NetHost)
+IPAddressField.register_lookup(lookups.NetHostContained)
+IPAddressField.register_lookup(lookups.NetMaskLength)

@@ -1,14 +1,13 @@
-from __future__ import unicode_literals
+import string
 
 from Crypto.PublicKey import RSA
-
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.test import TestCase
 
-from secrets.models import UserKey, Secret, encrypt_master_key, decrypt_master_key, generate_random_key
 from secrets.hashers import SecretValidationHasher
+from secrets.models import UserKey, Secret, encrypt_master_key, decrypt_master_key, generate_random_key
 
 
 class UserKeyTestCase(TestCase):
@@ -89,7 +88,7 @@ class SecretTestCase(TestCase):
         """
         Test basic encryption and decryption functionality using a random master key.
         """
-        plaintext = "FooBar123"
+        plaintext = string.printable * 2
         secret_key = generate_random_key()
         s = Secret(plaintext=plaintext)
         s.encrypt(secret_key)

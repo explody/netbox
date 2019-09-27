@@ -1,10 +1,9 @@
-{% extends '_base.html' %}
+{% extends 'dcim/device.html' %}
 
 {% block title %}{{ device }} - LLDP Neighbors{% endblock %}
 
 {% block content %}
     {% include 'inc/ajax_loader.html' %}
-    {% include 'dcim/inc/device_header.html' with active_tab='lldp-neighbors' %}
     <div class="panel panel-default">
         <div class="panel-heading">
             <strong>LLDP Neighbors</strong>
@@ -23,13 +22,18 @@
                 {% for iface in interfaces %}
                     <tr id="{{ iface.name }}">
                         <td>{{ iface }}</td>
-                        {% if iface.connection %}
-                            {% with iface.connected_interface as connected_iface %}
-                                <td class="configured_device" data="{{ connected_iface.device }}">
-                                    <a href="{% url 'dcim:device' pk=connected_iface.device.pk %}">{{ connected_iface.device }}</a>
-                                </td>
-                                <td class="configured_interface" data="{{ connected_iface }}">
-                                    <span title="{{ connected_iface.get_form_factor_display }}">{{ connected_iface }}</span>
+                        {% if iface.connected_endpoint.device %}
+                            <td class="configured_device" data="{{ iface.connected_endpoint.device }}">
+                                <a href="{% url 'dcim:device' pk=iface.connected_endpoint.device.pk %}">{{ iface.connected_endpoint.device }}</a>
+                            </td>
+                            <td class="configured_interface" data="{{ iface.connected_endpoint }}">
+                                <span title="{{ iface.connected_endpoint.get_type_display }}">{{ iface.connected_endpoint }}</span>
+                            </td>
+                        {% elif iface.connected_endpoint.circuit %}
+                            {% with circuit=iface.connected_endpoint.circuit %}
+                                <td colspan="2">
+                                    <i class="fa fa-fw fa-globe" title="Circuit"></i>
+                                    <a href="{{ circuit.get_absolute_url }}">{{ circuit.provider }} {{ circuit }}</a>
                                 </td>
                             {% endwith %}
                         {% else %}
@@ -53,19 +57,22 @@ $(document).ready(function() {
         success: function(json) {
             $.each(json['get_lldp_neighbors'], function(iface, neighbors) {
                 var neighbor = neighbors[0];
-                var row = $('#' + iface.split(".")[0].replace(/(\/)/g, "\\$1"));
+                var row = $('#' + iface.split(".")[0].replace(/([\/:])/g, "\\$1"));
 
                 // Glean configured hostnames/interfaces from the DOM
                 var configured_device = row.children('td.configured_device').attr('data');
                 var configured_interface = row.children('td.configured_interface').attr('data');
+                var configured_interface_short = null;
                 if (configured_interface) {
                     // Match long-form IOS names against short ones (e.g. Gi0/1 == GigabitEthernet0/1).
-                    configured_interface = configured_interface.replace(/^([A-Z][a-z])[^0-9]*([0-9\/]+)$/, "$1$2");
+                    configured_interface_short = configured_interface.replace(/^([A-Z][a-z])[^0-9]*([0-9\/]+)$/, "$1$2");
                 }
 
                 // Clean up hostnames/interfaces learned via LLDP
-                var lldp_device = neighbor['hostname'].split(".")[0];  // Strip off any trailing domain name
-                var lldp_interface = neighbor['port'].split(".")[0];   // Strip off any trailing subinterface ID
+                var neighbor_host = neighbor['hostname'] || ""; // sanitize hostname if it's null to avoid breaking the split func
+                var neighbor_port = neighbor['port'] || ""; // sanitize port if it's null to avoid breaking the split func
+                var lldp_device = neighbor_host.split(".")[0];  // Strip off any trailing domain name
+                var lldp_interface = neighbor_port.split(".")[0];   // Strip off any trailing subinterface ID
 
                 // Add LLDP neighbors to table
                 row.children('td.device').html(lldp_device);
@@ -75,6 +82,8 @@ $(document).ready(function() {
                 if (!configured_device && lldp_device) {
                     row.addClass('info');
                 } else if (configured_device == lldp_device && configured_interface == lldp_interface) {
+                    row.addClass('success');
+                } else if (configured_device == lldp_device && configured_interface_short == lldp_interface) {
                     row.addClass('success');
                 } else {
                     row.addClass('danger');

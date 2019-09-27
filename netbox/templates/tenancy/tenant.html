@@ -1,46 +1,63 @@
 {% extends '_base.html' %}
+{% load custom_links %}
 {% load helpers %}
 
+{% block header %}
+    <div class="row noprint">
+        <div class="col-sm-8 col-md-9">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'tenancy:tenant_list' %}">Tenants</a></li>
+                {% if tenant.group %}
+                    <li><a href="{% url 'tenancy:tenant_list' %}?group={{ tenant.group.slug }}">{{ tenant.group }}</a></li>
+                {% endif %}
+                <li>{{ tenant }}</li>
+            </ol>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            <form action="{% url 'tenancy:tenant_list' %}" method="get">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Name" />
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa fa-search" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="pull-right noprint">
+        {% if perms.tenancy.change_tenant %}
+            <a href="{% url 'tenancy:tenant_edit' slug=tenant.slug %}" class="btn btn-warning">
+                <span class="fa fa-pencil" aria-hidden="true"></span>
+                Edit this tenant
+            </a>
+        {% endif %}
+        {% if perms.tenancy.delete_tenant %}
+            <a href="{% url 'tenancy:tenant_delete' slug=tenant.slug %}" class="btn btn-danger">
+                <span class="fa fa-trash" aria-hidden="true"></span>
+                Delete this tenant
+            </a>
+        {% endif %}
+    </div>
+    <h1>{% block title %}{{ tenant }}{% endblock %}</h1>
+    {% include 'inc/created_updated.html' with obj=tenant %}
+    <div class="pull-right noprint">
+        {% custom_links tenant %}
+    </div>
+    <ul class="nav nav-tabs">
+        <li role="presentation"{% if not active_tab %} class="active"{% endif %}>
+            <a href="{{ tenant.get_absolute_url }}">Tenant</a>
+        </li>
+        {% if perms.extras.view_objectchange %}
+            <li role="presentation"{% if active_tab == 'changelog' %} class="active"{% endif %}>
+                <a href="{% url 'tenancy:tenant_changelog' slug=tenant.slug %}">Changelog</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-sm-8 col-md-9">
-        <ol class="breadcrumb">
-            <li><a href="{% url 'tenancy:tenant_list' %}">Tenants</a></li>
-            {% if tenant.group %}
-                <li><a href="{% url 'tenancy:tenant_list' %}?group={{ tenant.group.slug }}">{{ tenant.group }}</a></li>
-            {% endif %}
-            <li>{{ tenant }}</li>
-        </ol>
-    </div>
-    <div class="col-sm-4 col-md-3">
-        <form action="{% url 'tenancy:tenant_list' %}" method="get">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Name" />
-                <span class="input-group-btn">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="fa fa-search" aria-hidden="true"></span>
-                    </button>
-                </span>
-            </div>
-        </form>
-    </div>
-</div>
-<div class="pull-right">
-    {% if perms.tenancy.change_tenant %}
-		<a href="{% url 'tenancy:tenant_edit' slug=tenant.slug %}" class="btn btn-warning">
-			<span class="fa fa-pencil" aria-hidden="true"></span>
-			Edit this tenant
-		</a>
-    {% endif %}
-    {% if perms.tenancy.delete_tenant %}
-		<a href="{% url 'tenancy:tenant_delete' slug=tenant.slug %}" class="btn btn-danger">
-			<span class="fa fa-trash" aria-hidden="true"></span>
-			Delete this tenant
-		</a>
-    {% endif %}
-</div>
-<h1>{% block title %}{{ tenant }}{% endblock %}</h1>
-{% include 'inc/created_updated.html' with obj=tenant %}
 <div class="row">
 	<div class="col-md-7">
         <div class="panel panel-default">
@@ -60,24 +77,17 @@
                 </tr>
                 <tr>
                     <td>Description</td>
-                    <td>
-                        {% if tenant.description %}
-                            {{ tenant.description }}
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ tenant.description|placeholder }}</td>
                 </tr>
             </table>
         </div>
-        {% with tenant.get_custom_fields as custom_fields %}
-            {% include 'inc/custom_fields_panel.html' %}
-        {% endwith %}
+        {% include 'inc/custom_fields_panel.html' with obj=tenant %}
+        {% include 'extras/inc/tags_panel.html' with tags=tenant.tags.all url='tenancy:tenant_list' %}
         <div class="panel panel-default">
             <div class="panel-heading">
                 <strong>Comments</strong>
             </div>
-            <div class="panel-body">
+            <div class="panel-body rendered-markdown">
                 {% if tenant.comments %}
                     {{ tenant.comments|gfm }}
                 {% else %}
@@ -99,6 +109,10 @@
                 <div class="col-md-4 text-center">
                     <h2><a href="{% url 'dcim:rack_list' %}?tenant={{ tenant.slug }}" class="btn {% if stats.rack_count %}btn-primary{% else %}btn-default{% endif %} btn-lg">{{ stats.rack_count }}</a></h2>
                     <p>Racks</p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <h2><a href="{% url 'dcim:rackreservation_list' %}?tenant={{ tenant.slug }}" class="btn {% if stats.rackreservation_count %}btn-primary{% else %}btn-default{% endif %} btn-lg">{{ stats.rackreservation_count }}</a></h2>
+                    <p>Rack reservations</p>
                 </div>
                 <div class="col-md-4 text-center">
                     <h2><a href="{% url 'dcim:device_list' %}?tenant={{ tenant.slug }}" class="btn {% if stats.device_count %}btn-primary{% else %}btn-default{% endif %} btn-lg">{{ stats.device_count }}</a></h2>

@@ -1,20 +1,18 @@
-from __future__ import unicode_literals
 import re
 
-from django.core.validators import _lazy_re_compile, URLValidator
+from django.core.validators import _lazy_re_compile, BaseValidator, URLValidator
 
 
 class EnhancedURLValidator(URLValidator):
     """
     Extends Django's built-in URLValidator to permit the use of hostnames with no domain extension.
     """
-
     class AnyURLScheme(object):
         """
         A fake URL list which "contains" all scheme names abiding by the syntax defined in RFC 3986 section 3.1
         """
         def __contains__(self, item):
-            if not item or not re.match('^[a-z][0-9a-z+\-.]*$', item.lower()):
+            if not item or not re.match(r'^[a-z][0-9a-z+\-.]*$', item.lower()):
                 return False
             return True
 
@@ -28,3 +26,19 @@ class EnhancedURLValidator(URLValidator):
         r'(?:[/?#][^\s]*)?'                 # Path
         r'\Z', re.IGNORECASE)
     schemes = AnyURLScheme()
+
+
+class MaxPrefixLengthValidator(BaseValidator):
+    message = 'The prefix length must be less than or equal to %(limit_value)s.'
+    code = 'max_prefix_length'
+
+    def compare(self, a, b):
+        return a.prefixlen > b
+
+
+class MinPrefixLengthValidator(BaseValidator):
+    message = 'The prefix length must be greater than or equal to %(limit_value)s.'
+    code = 'min_prefix_length'
+
+    def compare(self, a, b):
+        return a.prefixlen < b

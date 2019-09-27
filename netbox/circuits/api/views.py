@@ -1,17 +1,14 @@
-from __future__ import unicode_literals
-
-from rest_framework.decorators import detail_route
-from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
-
+from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
 from circuits import filters
 from circuits.models import Provider, CircuitTermination, CircuitType, Circuit
-from extras.models import Graph, GRAPH_TYPE_PROVIDER
 from extras.api.serializers import RenderedGraphSerializer
 from extras.api.views import CustomFieldModelViewSet
-from utilities.api import FieldChoicesViewSet, WritableSerializerMixin
+from extras.models import Graph, GRAPH_TYPE_PROVIDER
+from utilities.api import FieldChoicesViewSet, ModelViewSet
 from . import serializers
 
 
@@ -21,6 +18,7 @@ from . import serializers
 
 class CircuitsFieldChoicesViewSet(FieldChoicesViewSet):
     fields = (
+        (Circuit, ['status']),
         (CircuitTermination, ['term_side']),
     )
 
@@ -29,14 +27,15 @@ class CircuitsFieldChoicesViewSet(FieldChoicesViewSet):
 # Providers
 #
 
-class ProviderViewSet(WritableSerializerMixin, CustomFieldModelViewSet):
-    queryset = Provider.objects.all()
+class ProviderViewSet(CustomFieldModelViewSet):
+    queryset = Provider.objects.prefetch_related('tags').annotate(
+        circuit_count=Count('circuits')
+    )
     serializer_class = serializers.ProviderSerializer
-    write_serializer_class = serializers.WritableProviderSerializer
-    filter_class = filters.ProviderFilter
+    filterset_class = filters.ProviderFilter
 
-    @detail_route()
-    def graphs(self, request, pk=None):
+    @action(detail=True)
+    def graphs(self, request, pk):
         """
         A convenience method for rendering graphs for a particular provider.
         """
@@ -51,28 +50,30 @@ class ProviderViewSet(WritableSerializerMixin, CustomFieldModelViewSet):
 #
 
 class CircuitTypeViewSet(ModelViewSet):
-    queryset = CircuitType.objects.all()
+    queryset = CircuitType.objects.annotate(
+        circuit_count=Count('circuits')
+    )
     serializer_class = serializers.CircuitTypeSerializer
-    filter_class = filters.CircuitTypeFilter
+    filterset_class = filters.CircuitTypeFilter
 
 
 #
 # Circuits
 #
 
-class CircuitViewSet(WritableSerializerMixin, CustomFieldModelViewSet):
-    queryset = Circuit.objects.select_related('type', 'tenant', 'provider')
+class CircuitViewSet(CustomFieldModelViewSet):
+    queryset = Circuit.objects.prefetch_related('type', 'tenant', 'provider').prefetch_related('tags')
     serializer_class = serializers.CircuitSerializer
-    write_serializer_class = serializers.WritableCircuitSerializer
-    filter_class = filters.CircuitFilter
+    filterset_class = filters.CircuitFilter
 
 
 #
 # Circuit Terminations
 #
 
-class CircuitTerminationViewSet(WritableSerializerMixin, ModelViewSet):
-    queryset = CircuitTermination.objects.select_related('circuit', 'site', 'interface__device')
+class CircuitTerminationViewSet(ModelViewSet):
+    queryset = CircuitTermination.objects.prefetch_related(
+        'circuit', 'site', 'connected_endpoint__device', 'cable'
+    )
     serializer_class = serializers.CircuitTerminationSerializer
-    write_serializer_class = serializers.WritableCircuitTerminationSerializer
-    filter_class = filters.CircuitTerminationFilter
+    filterset_class = filters.CircuitTerminationFilter

@@ -1,15 +1,12 @@
-from __future__ import unicode_literals
 from datetime import datetime
-
-from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
+from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
-from extras.models import (
-    CF_TYPE_BOOLEAN, CF_TYPE_DATE, CF_TYPE_SELECT, CustomField, CustomFieldChoice, CustomFieldValue,
-)
+from extras.constants import CF_TYPE_BOOLEAN, CF_TYPE_DATE, CF_TYPE_INTEGER, CF_TYPE_SELECT
+from extras.models import CustomField, CustomFieldChoice, CustomFieldValue
 from utilities.api import ValidatedModelSerializer
 
 
@@ -38,6 +35,15 @@ class CustomFieldsSerializer(serializers.BaseSerializer):
 
             # Data validation
             if value not in [None, '']:
+
+                # Validate integer
+                if cf.type == CF_TYPE_INTEGER:
+                    try:
+                        int(value)
+                    except ValueError:
+                        raise ValidationError(
+                            "Invalid value for integer field {}: {}".format(field_name, value)
+                        )
 
                 # Validate boolean
                 if cf.type == CF_TYPE_BOOLEAN and value not in [True, False, 1, 0]:
@@ -99,7 +105,7 @@ class CustomFieldModelSerializer(ValidatedModelSerializer):
                     custom_fields[cfv.field.name] = cfv.value
             instance.custom_fields = custom_fields
 
-        super(CustomFieldModelSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         if self.instance is not None:
 
@@ -131,7 +137,7 @@ class CustomFieldModelSerializer(ValidatedModelSerializer):
 
         with transaction.atomic():
 
-            instance = super(CustomFieldModelSerializer, self).create(validated_data)
+            instance = super().create(validated_data)
 
             # Save custom fields
             if custom_fields is not None:
@@ -146,7 +152,7 @@ class CustomFieldModelSerializer(ValidatedModelSerializer):
 
         with transaction.atomic():
 
-            instance = super(CustomFieldModelSerializer, self).update(instance, validated_data)
+            instance = super().update(instance, validated_data)
 
             # Save custom fields
             if custom_fields is not None:

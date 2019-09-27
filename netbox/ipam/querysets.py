@@ -1,9 +1,7 @@
-from __future__ import unicode_literals
-
-from utilities.sql import NullsFirstQuerySet
+from django.db.models import QuerySet
 
 
-class PrefixQuerySet(NullsFirstQuerySet):
+class PrefixQuerySet(QuerySet):
 
     def annotate_depth(self, limit=None):
         """

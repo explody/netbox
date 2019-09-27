@@ -1,55 +1,74 @@
 {% extends '_base.html' %}
-{% load static from staticfiles %}
+{% load static %}
+{% load tz %}
+{% load custom_links %}
 {% load helpers %}
 
+{% block header %}
+    <div class="row noprint">
+        <div class="col-sm-8 col-md-9">
+            <ol class="breadcrumb">
+                <li><a href="{% url 'dcim:site_list' %}">Sites</a></li>
+                {% if site.region %}
+                    {% for region in site.region.get_ancestors %}
+                        <li><a href="{{ region.get_absolute_url }}">{{ region }}</a></li>
+                    {% endfor %}
+                    <li><a href="{{ site.region.get_absolute_url }}">{{ site.region }}</a></li>
+                {% endif %}
+                <li>{{ site }}</li>
+            </ol>
+        </div>
+        <div class="col-sm-4 col-md-3">
+            <form action="{% url 'dcim:site_list' %}" method="get">
+                <div class="input-group">
+                    <input type="text" name="q" class="form-control" placeholder="Search sites" />
+                    <span class="input-group-btn">
+                        <button type="submit" class="btn btn-primary">
+                            <span class="fa fa-search" aria-hidden="true"></span>
+                        </button>
+                    </span>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="pull-right noprint">
+        {% if show_graphs %}
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#graphs_modal" data-obj="{{ site.name }}" data-url="{% url 'dcim-api:site-graphs' pk=site.pk %}" title="Show graphs">
+                <i class="fa fa-signal" aria-hidden="true"></i>
+                Graphs
+            </button>
+        {% endif %}
+        {% if perms.dcim.change_site %}
+            <a href="{% url 'dcim:site_edit' slug=site.slug %}" class="btn btn-warning">
+                <span class="fa fa-pencil" aria-hidden="true"></span>
+                Edit this site
+            </a>
+        {% endif %}
+        {% if perms.dcim.delete_site %}
+            <a href="{% url 'dcim:site_delete' slug=site.slug %}" class="btn btn-danger">
+                <span class="fa fa-trash" aria-hidden="true"></span>
+                Delete this site
+            </a>
+        {% endif %}
+    </div>
+    <h1>{% block title %}{{ site }}{% endblock %}</h1>
+    {% include 'inc/created_updated.html' with obj=site %}
+    <div class="pull-right noprint">
+        {% custom_links site %}
+    </div>
+    <ul class="nav nav-tabs">
+        <li role="presentation"{% if not active_tab %} class="active"{% endif %}>
+            <a href="{{ site.get_absolute_url }}">Site</a>
+        </li>
+        {% if perms.extras.view_objectchange %}
+            <li role="presentation"{% if active_tab == 'changelog' %} class="active"{% endif %}>
+                <a href="{% url 'dcim:site_changelog' slug=site.slug %}">Changelog</a>
+            </li>
+        {% endif %}
+    </ul>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-sm-8 col-md-9">
-        <ol class="breadcrumb">
-            {% if site.region %}
-                {% for region in site.region.get_ancestors %}
-                    <li><a href="{{ region.get_absolute_url }}">{{ region }}</a></li>
-                {% endfor %}
-                <li><a href="{{ site.region.get_absolute_url }}">{{ site.region }}</a></li>
-            {% endif %}
-            <li>{{ site }}</li>
-        </ol>
-    </div>
-    <div class="col-sm-4 col-md-3">
-        <form action="{% url 'dcim:site_list' %}" method="get">
-            <div class="input-group">
-                <input type="text" name="q" class="form-control" placeholder="Search sites" />
-                <span class="input-group-btn">
-                    <button type="submit" class="btn btn-primary">
-                        <span class="fa fa-search" aria-hidden="true"></span>
-                    </button>
-                </span>
-            </div>
-        </form>
-    </div>
-</div>
-<div class="pull-right">
-    {% if show_graphs %}
-        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#graphs_modal" data-obj="{{ site.name }}" data-url="{% url 'dcim-api:site-graphs' pk=site.pk %}" title="Show graphs">
-            <i class="fa fa-signal" aria-hidden="true"></i>
-            Graphs
-        </button>
-    {% endif %}
-    {% if perms.dcim.change_site %}
-		<a href="{% url 'dcim:site_edit' slug=site.slug %}" class="btn btn-warning">
-			<span class="fa fa-pencil" aria-hidden="true"></span>
-			Edit this site
-		</a>
-    {% endif %}
-    {% if perms.dcim.delete_site %}
-		<a href="{% url 'dcim:site_delete' slug=site.slug %}" class="btn btn-danger">
-			<span class="fa fa-trash" aria-hidden="true"></span>
-			Delete this site
-		</a>
-    {% endif %}
-</div>
-<h1>{% block title %}{{ site }}{% endblock %}</h1>
-{% include 'inc/created_updated.html' with obj=site %}
 <div class="row">
 	<div class="col-md-7">
         <div class="panel panel-default">
@@ -57,6 +76,12 @@
                 <strong>Site</strong>
             </div>
             <table class="table table-hover panel-body attr-table">
+                <tr>
+                    <td>Status</td>
+                    <td>
+                        <span class="label label-{{ site.get_status_class }}">{{ site.get_status_display }}</span>
+                    </td>
+                </tr>
                 <tr>
                     <td>Region</td>
                     <td>
@@ -87,23 +112,26 @@
                 </tr>
                 <tr>
                     <td>Facility</td>
+                    <td>{{ site.facility|placeholder }}</td>
+                </tr>
+                <tr>
+                    <td>AS Number</td>
+                    <td>{{ site.asn|placeholder }}</td>
+                </tr>
+                <tr>
+                    <td>Time Zone</td>
                     <td>
-                        {% if site.facility %}
-                            {{ site.facility }}
+                        {% if site.time_zone %}
+                            {{ site.time_zone }} (UTC {{ site.time_zone|tzoffset }})<br />
+                            <small class="text-muted">Site time: {% timezone site.time_zone %}{% now "SHORT_DATETIME_FORMAT" %}{% endtimezone %}</small>
                         {% else %}
-                            <span class="text-muted">N/A</span>
+                            <span class="text-muted">&mdash;</span>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
-                    <td>AS Number</td>
-                    <td>
-                        {% if site.asn %}
-                            {{ site.asn }}
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>Description</td>
+                    <td>{{ site.description|placeholder }}</td>
                 </tr>
             </table>
         </div>
@@ -116,36 +144,39 @@
                     <td>Physical Address</td>
                     <td>
                         {% if site.physical_address %}
-                            <div class="pull-right">
-                                <a href="http://maps.google.com/?q={{ site.physical_address|oneline }}" target="_blank" class="btn btn-primary btn-xs">
+                            <div class="pull-right noprint">
+                                <a href="http://maps.google.com/?q={{ site.physical_address|oneline|urlencode }}" target="_blank" class="btn btn-primary btn-xs">
                                     <i class="glyphicon glyphicon-map-marker"></i> Map it
                                 </a>
                             </div>
                             <span>{{ site.physical_address|linebreaksbr }}</span>
                         {% else %}
-                            <span class="text-muted">N/A</span>
+                            <span class="text-muted">&mdash;</span>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <td>Shipping Address</td>
+                    <td>{{ site.shipping_address|linebreaksbr|placeholder }}</td>
+                </tr>
+                <tr>
+                    <td>GPS Coordinates</td>
                     <td>
-                        {% if site.shipping_address %}
-                            <span>{{ site.shipping_address|linebreaksbr }}</span>
+                        {% if site.latitude and site.longitude %}
+                            <div class="pull-right noprint">
+                                <a href="http://maps.google.com/?q={{ site.latitude }},{{ site.longitude }}" target="_blank" class="btn btn-primary btn-xs">
+                                    <i class="glyphicon glyphicon-map-marker"></i> Map it
+                                </a>
+                            </div>
+                            <span>{{ site.latitude }}, {{ site.longitude }}</span>
                         {% else %}
-                            <span class="text-muted">N/A</span>
+                            <span class="text-muted">&mdash;</span>
                         {% endif %}
                     </td>
                 </tr>
                 <tr>
                     <td>Contact Name</td>
-                    <td>
-                        {% if site.contact_name %}
-                            <span>{{ site.contact_name }}</span>
-                        {% else %}
-                            <span class="text-muted">N/A</span>
-                        {% endif %}
-                    </td>
+                    <td>{{ site.contact_name|placeholder }}</td>
                 </tr>
                 <tr>
                     <td>Contact Phone</td>
@@ -153,7 +184,7 @@
                         {% if site.contact_phone %}
                             <a href="tel:{{ site.contact_phone }}">{{ site.contact_phone }}</a>
                         {% else %}
-                            <span class="text-muted">N/A</span>
+                            <span class="text-muted">&mdash;</span>
                         {% endif %}
                     </td>
                 </tr>
@@ -163,20 +194,19 @@
                         {% if site.contact_email %}
                             <a href="mailto:{{ site.contact_email }}">{{ site.contact_email }}</a>
                         {% else %}
-                            <span class="text-muted">N/A</span>
+                            <span class="text-muted">&mdash;</span>
                         {% endif %}
                     </td>
                 </tr>
             </table>
         </div>
-        {% with site.get_custom_fields as custom_fields %}
-            {% include 'inc/custom_fields_panel.html' %}
-        {% endwith %}
+        {% include 'inc/custom_fields_panel.html' with obj=site %}
+        {% include 'extras/inc/tags_panel.html' with tags=site.tags.all url='dcim:site_list' %}
         <div class="panel panel-default">
             <div class="panel-heading">
                 <strong>Comments</strong>
             </div>
-            <div class="panel-body">
+            <div class="panel-body rendered-markdown">
                 {% if site.comments %}
                     {{ site.comments|gfm }}
                 {% else %}
@@ -211,6 +241,10 @@
                     <h2><a href="{% url 'circuits:circuit_list' %}?site={{ site.slug }}" class="btn {% if stats.circuit_count %}btn-primary{% else %}btn-default{% endif %} btn-lg">{{ stats.circuit_count }}</a></h2>
                     <p>Circuits</p>
                 </div>
+                <div class="col-md-4 text-center">
+                    <h2><a href="{% url 'virtualization:virtualmachine_list' %}?site={{ site.slug }}" class="btn {% if stats.vm_count %}btn-primary{% else %}btn-default{% endif %} btn-lg">{{ stats.vm_count }}</a></h2>
+                    <p>Virtual Machines</p>
+                </div>
             </div>
         </div>
         <div class="panel panel-default">
@@ -223,6 +257,11 @@
                         <tr>
                             <td><i class="fa fa-fw fa-folder-o"></i> <a href="{{ rg.get_absolute_url }}">{{ rg }}</a></td>
                             <td>{{ rg.rack_count }}</td>
+                            <td class="text-right noprint">
+                                <a href="{% url 'dcim:rack_elevation_list' %}?group_id={{ rg.pk }}" class="btn btn-xs btn-primary" title="View elevations">
+                                    <i class="fa fa-eye"></i>
+                                </a>
+                            </td>
                         </tr>
                     {% endfor %}
                 </table>
@@ -238,7 +277,7 @@
             </div>
             {% include 'inc/image_attachments.html' with images=site.images.all %}
             {% if perms.extras.add_imageattachment %}
-                <div class="panel-footer text-right">
+                <div class="panel-footer text-right noprint">
                     <a href="{% url 'dcim:site_add_image' object_id=site.pk %}" class="btn btn-primary btn-xs">
                         <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
                         Attach an image
@@ -267,7 +306,7 @@
         </div>
 	</div>
 </div>
-{% include 'inc/graphs_modal.html' %}
+{% include 'inc/modal.html' with modal_name='graphs' %}
 {% endblock %}
 
 {% block javascript %}

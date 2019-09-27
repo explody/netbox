@@ -1,10 +1,37 @@
 import logging
 import os
+import platform
 import socket
+import warnings
 
 from django.contrib.messages import constants as messages
 from django.core.exceptions import ImproperlyConfigured
 
+
+#
+# Environment setup
+#
+
+VERSION = '2.6.6-dev'
+
+# Hostname
+HOSTNAME = platform.node()
+
+# Set the base directory two levels up
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Django 2.1+ requires Python 3.5+
+if platform.python_version_tuple() < ('3', '5'):
+    raise RuntimeError(
+        "NetBox requires Python 3.5 or higher (current: Python {})".format(platform.python_version())
+    )
+
+
+#
+# Configuration import
+#
+
+# Import configuration parameters
 try:
     from netbox import configuration
 except ImportError:
@@ -12,21 +39,20 @@ except ImportError:
         "Configuration file is not present. Please define netbox/netbox/configuration.py per the documentation."
     )
 
-VERSION = '2.2.5-dev'
-
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Import required configuration parameters
-ALLOWED_HOSTS = DATABASE = SECRET_KEY = None
-for setting in ['ALLOWED_HOSTS', 'DATABASE', 'SECRET_KEY']:
-    try:
-        globals()[setting] = getattr(configuration, setting)
-    except AttributeError:
+# Enforce required configuration parameters
+for parameter in ['ALLOWED_HOSTS', 'DATABASE', 'SECRET_KEY', 'REDIS']:
+    if not hasattr(configuration, parameter):
         raise ImproperlyConfigured(
-            "Mandatory setting {} is missing from configuration.py.".format(setting)
+            "Required parameter {} is missing from configuration.py.".format(parameter)
         )
 
-# Import optional configuration parameters
+# Set required parameters
+ALLOWED_HOSTS = getattr(configuration, 'ALLOWED_HOSTS')
+DATABASE = getattr(configuration, 'DATABASE')
+REDIS = getattr(configuration, 'REDIS')
+SECRET_KEY = getattr(configuration, 'SECRET_KEY')
+
+# Set optional parameters
 ADMINS = getattr(configuration, 'ADMINS', [])
 BANNER_BOTTOM = getattr(configuration, 'BANNER_BOTTOM', '')
 BANNER_LOGIN = getattr(configuration, 'BANNER_LOGIN', '')
@@ -34,34 +60,42 @@ BANNER_TOP = getattr(configuration, 'BANNER_TOP', '')
 BASE_PATH = getattr(configuration, 'BASE_PATH', '')
 if BASE_PATH:
     BASE_PATH = BASE_PATH.strip('/') + '/'  # Enforce trailing slash only
+CACHE_TIMEOUT = getattr(configuration, 'CACHE_TIMEOUT', 900)
+CHANGELOG_RETENTION = getattr(configuration, 'CHANGELOG_RETENTION', 90)
 CORS_ORIGIN_ALLOW_ALL = getattr(configuration, 'CORS_ORIGIN_ALLOW_ALL', False)
 CORS_ORIGIN_REGEX_WHITELIST = getattr(configuration, 'CORS_ORIGIN_REGEX_WHITELIST', [])
 CORS_ORIGIN_WHITELIST = getattr(configuration, 'CORS_ORIGIN_WHITELIST', [])
 DATE_FORMAT = getattr(configuration, 'DATE_FORMAT', 'N j, Y')
 DATETIME_FORMAT = getattr(configuration, 'DATETIME_FORMAT', 'N j, Y g:i a')
 DEBUG = getattr(configuration, 'DEBUG', False)
-ENFORCE_GLOBAL_UNIQUE = getattr(configuration, 'ENFORCE_GLOBAL_UNIQUE', False)
 EMAIL = getattr(configuration, 'EMAIL', {})
+ENFORCE_GLOBAL_UNIQUE = getattr(configuration, 'ENFORCE_GLOBAL_UNIQUE', False)
+EXEMPT_VIEW_PERMISSIONS = getattr(configuration, 'EXEMPT_VIEW_PERMISSIONS', [])
 LOGGING = getattr(configuration, 'LOGGING', {})
 LOGIN_REQUIRED = getattr(configuration, 'LOGIN_REQUIRED', False)
+LOGIN_TIMEOUT = getattr(configuration, 'LOGIN_TIMEOUT', None)
 MAINTENANCE_MODE = getattr(configuration, 'MAINTENANCE_MODE', False)
 MAX_PAGE_SIZE = getattr(configuration, 'MAX_PAGE_SIZE', 1000)
 MEDIA_ROOT = getattr(configuration, 'MEDIA_ROOT', os.path.join(BASE_DIR, 'media')).rstrip('/')
-NAPALM_USERNAME = getattr(configuration, 'NAPALM_USERNAME', '')
+METRICS_ENABLED = getattr(configuration, 'METRICS_ENABLED', False)
+NAPALM_ARGS = getattr(configuration, 'NAPALM_ARGS', {})
 NAPALM_PASSWORD = getattr(configuration, 'NAPALM_PASSWORD', '')
 NAPALM_TIMEOUT = getattr(configuration, 'NAPALM_TIMEOUT', 30)
-NAPALM_ARGS = getattr(configuration, 'NAPALM_ARGS', {})
+NAPALM_USERNAME = getattr(configuration, 'NAPALM_USERNAME', '')
 PAGINATE_COUNT = getattr(configuration, 'PAGINATE_COUNT', 50)
 PREFER_IPV4 = getattr(configuration, 'PREFER_IPV4', False)
 REPORTS_ROOT = getattr(configuration, 'REPORTS_ROOT', os.path.join(BASE_DIR, 'reports')).rstrip('/')
+SCRIPTS_ROOT = getattr(configuration, 'SCRIPTS_ROOT', os.path.join(BASE_DIR, 'scripts')).rstrip('/')
+SESSION_FILE_PATH = getattr(configuration, 'SESSION_FILE_PATH', None)
 SHORT_DATE_FORMAT = getattr(configuration, 'SHORT_DATE_FORMAT', 'Y-m-d')
 SHORT_DATETIME_FORMAT = getattr(configuration, 'SHORT_DATETIME_FORMAT', 'Y-m-d H:i')
 SHORT_TIME_FORMAT = getattr(configuration, 'SHORT_TIME_FORMAT', 'H:i:s')
 TIME_FORMAT = getattr(configuration, 'TIME_FORMAT', 'g:i a')
 TIME_ZONE = getattr(configuration, 'TIME_ZONE', 'UTC')
+WEBHOOKS_ENABLED = getattr(configuration, 'WEBHOOKS_ENABLED', False)
 
-CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
 
+<<<<<<< HEAD
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
 ]
@@ -127,11 +161,55 @@ if SAML_ENABLED:
 
 # Database
 configuration.DATABASE.update({'ENGINE': 'django.db.backends.postgresql'})
+=======
+#
+# Database
+#
+
+# Only PostgreSQL is supported
+if METRICS_ENABLED:
+    DATABASE.update({
+        'ENGINE': 'django_prometheus.db.backends.postgresql'
+    })
+else:
+    DATABASE.update({
+        'ENGINE': 'django.db.backends.postgresql'
+    })
+
+>>>>>>> upstream
 DATABASES = {
-    'default': configuration.DATABASE,
+    'default': DATABASE,
 }
 
+
+#
+# Redis
+#
+
+REDIS_HOST = REDIS.get('HOST', 'localhost')
+REDIS_PORT = REDIS.get('PORT', 6379)
+REDIS_PASSWORD = REDIS.get('PASSWORD', '')
+REDIS_DATABASE = REDIS.get('DATABASE', 0)
+REDIS_CACHE_DATABASE = REDIS.get('CACHE_DATABASE', 1)
+REDIS_DEFAULT_TIMEOUT = REDIS.get('DEFAULT_TIMEOUT', 300)
+REDIS_SSL = REDIS.get('SSL', False)
+
+
+#
+# Sessions
+#
+
+if LOGIN_TIMEOUT is not None:
+    # Django default is 1209600 seconds (14 days)
+    SESSION_COOKIE_AGE = LOGIN_TIMEOUT
+if SESSION_FILE_PATH is not None:
+    SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+
+
+#
 # Email
+#
+
 EMAIL_HOST = EMAIL.get('SERVER')
 EMAIL_PORT = EMAIL.get('PORT', 25)
 EMAIL_HOST_USER = EMAIL.get('USERNAME')
@@ -140,8 +218,12 @@ EMAIL_TIMEOUT = EMAIL.get('TIMEOUT', 10)
 SERVER_EMAIL = EMAIL.get('FROM_EMAIL')
 EMAIL_SUBJECT_PREFIX = '[NetBox] '
 
-# Installed applications
-INSTALLED_APPS = (
+
+#
+# Django
+#
+
+INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -149,13 +231,17 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+    'cacheops',
     'corsheaders',
     'debug_toolbar',
     'django_filters',
     'django_tables2',
+    'django_prometheus',
     'mptt',
     'rest_framework',
-    'rest_framework_swagger',
+    'taggit',
+    'taggit_serializer',
+    'timezone_field',
     'circuits',
     'dcim',
     'ipam',
@@ -165,33 +251,45 @@ INSTALLED_APPS = (
     'users',
     'utilities',
     'virtualization',
+<<<<<<< HEAD
     # 'djangosaml2'  # Uncomment for testing.
                      # See https://github.com/knaperek/djangosaml2/#changes-in-the-settings-py-file
 )
+=======
+    'drf_yasg',
+]
+
+# Only load django-rq if the webhook backend is enabled
+if WEBHOOKS_ENABLED:
+    INSTALLED_APPS.append('django_rq')
+>>>>>>> upstream
 
 # Middleware
 MIDDLEWARE = (
     'debug_toolbar.middleware.DebugToolbarMiddleware',
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'utilities.middleware.ExceptionHandlingMiddleware',
     'utilities.middleware.LoginRequiredMiddleware',
     'utilities.middleware.APIVersionMiddleware',
+    'extras.middleware.ObjectChangeMiddleware',
+    'django_prometheus.middleware.PrometheusAfterMiddleware',
 )
 
 ROOT_URLCONF = 'netbox.urls'
 
+TEMPLATES_DIR = BASE_DIR + '/templates'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR + '/templates/'],
+        'DIRS': [TEMPLATES_DIR],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -206,18 +304,23 @@ TEMPLATES = [
     },
 ]
 
-# WSGI
-WSGI_APPLICATION = 'netbox.wsgi.application'
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-USE_X_FORWARDED_HOST = True
+# Authentication
+AUTHENTICATION_BACKENDS = [
+    'utilities.auth_backends.ViewExemptModelBackend',
+]
 
 # Internationalization
 LANGUAGE_CODE = 'en-us'
 USE_I18N = True
 USE_TZ = True
 
+# WSGI
+WSGI_APPLICATION = 'netbox.wsgi.application'
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+
 # Static files (CSS, JavaScript, Images)
-STATIC_ROOT = BASE_DIR + '/static/'
+STATIC_ROOT = BASE_DIR + '/static'
 STATIC_URL = '/{}static/'.format(BASE_PATH)
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "project-static"),
@@ -234,14 +337,142 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger',
 }
 
+<<<<<<< HEAD
 # Secrets
 SECRETS_MIN_PUBKEY_SIZE = 2048
+=======
+# Authentication URLs
+LOGIN_URL = '/{}login/'.format(BASE_PATH)
 
+CSRF_TRUSTED_ORIGINS = ALLOWED_HOSTS
+
+
+#
+# LDAP authentication (optional)
+#
+
+try:
+    from netbox import ldap_config as LDAP_CONFIG
+except ImportError:
+    LDAP_CONFIG = None
+
+if LDAP_CONFIG is not None:
+
+    # Check that django_auth_ldap is installed
+    try:
+        import ldap
+        import django_auth_ldap
+    except ImportError:
+        raise ImproperlyConfigured(
+            "LDAP authentication has been configured, but django-auth-ldap is not installed. Remove "
+            "netbox/ldap_config.py to disable LDAP."
+        )
+
+    # Required configuration parameters
+    try:
+        AUTH_LDAP_SERVER_URI = getattr(LDAP_CONFIG, 'AUTH_LDAP_SERVER_URI')
+    except AttributeError:
+        raise ImproperlyConfigured(
+            "Required parameter AUTH_LDAP_SERVER_URI is missing from ldap_config.py."
+        )
+
+    # Optional configuration parameters
+    AUTH_LDAP_ALWAYS_UPDATE_USER = getattr(LDAP_CONFIG, 'AUTH_LDAP_ALWAYS_UPDATE_USER', True)
+    AUTH_LDAP_AUTHORIZE_ALL_USERS = getattr(LDAP_CONFIG, 'AUTH_LDAP_AUTHORIZE_ALL_USERS', False)
+    AUTH_LDAP_BIND_AS_AUTHENTICATING_USER = getattr(LDAP_CONFIG, 'AUTH_LDAP_BIND_AS_AUTHENTICATING_USER', False)
+    AUTH_LDAP_BIND_DN = getattr(LDAP_CONFIG, 'AUTH_LDAP_BIND_DN', '')
+    AUTH_LDAP_BIND_PASSWORD = getattr(LDAP_CONFIG, 'AUTH_LDAP_BIND_PASSWORD', '')
+    AUTH_LDAP_CACHE_TIMEOUT = getattr(LDAP_CONFIG, 'AUTH_LDAP_CACHE_TIMEOUT', 0)
+    AUTH_LDAP_CONNECTION_OPTIONS = getattr(LDAP_CONFIG, 'AUTH_LDAP_CONNECTION_OPTIONS', {})
+    AUTH_LDAP_DENY_GROUP = getattr(LDAP_CONFIG, 'AUTH_LDAP_DENY_GROUP', None)
+    AUTH_LDAP_FIND_GROUP_PERMS = getattr(LDAP_CONFIG, 'AUTH_LDAP_FIND_GROUP_PERMS', False)
+    AUTH_LDAP_GLOBAL_OPTIONS = getattr(LDAP_CONFIG, 'AUTH_LDAP_GLOBAL_OPTIONS', {})
+    AUTH_LDAP_GROUP_SEARCH = getattr(LDAP_CONFIG, 'AUTH_LDAP_GROUP_SEARCH', None)
+    AUTH_LDAP_GROUP_TYPE = getattr(LDAP_CONFIG, 'AUTH_LDAP_GROUP_TYPE', None)
+    AUTH_LDAP_MIRROR_GROUPS = getattr(LDAP_CONFIG, 'AUTH_LDAP_MIRROR_GROUPS', None)
+    AUTH_LDAP_MIRROR_GROUPS_EXCEPT = getattr(LDAP_CONFIG, 'AUTH_LDAP_MIRROR_GROUPS_EXCEPT', None)
+    AUTH_LDAP_PERMIT_EMPTY_PASSWORD = getattr(LDAP_CONFIG, 'AUTH_LDAP_PERMIT_EMPTY_PASSWORD', False)
+    AUTH_LDAP_REQUIRE_GROUP = getattr(LDAP_CONFIG, 'AUTH_LDAP_REQUIRE_GROUP', None)
+    AUTH_LDAP_NO_NEW_USERS = getattr(LDAP_CONFIG, 'AUTH_LDAP_NO_NEW_USERS', False)
+    AUTH_LDAP_START_TLS = getattr(LDAP_CONFIG, 'AUTH_LDAP_START_TLS', False)
+    AUTH_LDAP_USER_QUERY_FIELD = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_QUERY_FIELD', None)
+    AUTH_LDAP_USER_ATTRLIST = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_ATTRLIST', None)
+    AUTH_LDAP_USER_ATTR_MAP = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_ATTR_MAP', {})
+    AUTH_LDAP_USER_DN_TEMPLATE = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_DN_TEMPLATE', None)
+    AUTH_LDAP_USER_FLAGS_BY_GROUP = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_FLAGS_BY_GROUP', {})
+    AUTH_LDAP_USER_SEARCH = getattr(LDAP_CONFIG, 'AUTH_LDAP_USER_SEARCH', None)
+
+    # Optionally disable strict certificate checking
+    if getattr(LDAP_CONFIG, 'LDAP_IGNORE_CERT_ERRORS', False):
+        ldap.set_option(ldap.OPT_X_TLS_REQUIRE_CERT, ldap.OPT_X_TLS_NEVER)
+
+    # Prepend LDAPBackend to the authentication backends list
+    AUTHENTICATION_BACKENDS.insert(0, 'django_auth_ldap.backend.LDAPBackend')
+
+    # Enable logging for django_auth_ldap
+    ldap_logger = logging.getLogger('django_auth_ldap')
+    ldap_logger.addHandler(logging.StreamHandler())
+    ldap_logger.setLevel(logging.DEBUG)
+
+
+#
+# Caching
+#
+
+if REDIS_SSL:
+    REDIS_CACHE_CON_STRING = 'rediss://'
+else:
+    REDIS_CACHE_CON_STRING = 'redis://'
+
+if REDIS_PASSWORD:
+    REDIS_CACHE_CON_STRING = '{}:{}@'.format(REDIS_CACHE_CON_STRING, REDIS_PASSWORD)
+>>>>>>> upstream
+
+REDIS_CACHE_CON_STRING = '{}{}:{}/{}'.format(REDIS_CACHE_CON_STRING, REDIS_HOST, REDIS_PORT, REDIS_CACHE_DATABASE)
+
+if not CACHE_TIMEOUT:
+    CACHEOPS_ENABLED = False
+else:
+    CACHEOPS_ENABLED = True
+
+CACHEOPS_REDIS = REDIS_CACHE_CON_STRING
+CACHEOPS_DEFAULTS = {
+    'timeout': CACHE_TIMEOUT
+}
+CACHEOPS = {
+    'auth.user': {'ops': 'get', 'timeout': 60 * 15},
+    'auth.*': {'ops': ('fetch', 'get')},
+    'auth.permission': {'ops': 'all'},
+    'dcim.*': {'ops': 'all'},
+    'ipam.*': {'ops': 'all'},
+    'extras.*': {'ops': 'all'},
+    'secrets.*': {'ops': 'all'},
+    'users.*': {'ops': 'all'},
+    'tenancy.*': {'ops': 'all'},
+    'virtualization.*': {'ops': 'all'},
+}
+CACHEOPS_DEGRADE_ON_FAILURE = True
+
+
+#
+# Django Prometheus
+#
+
+PROMETHEUS_EXPORT_MIGRATIONS = False
+
+
+#
 # Django filters
-FILTERS_NULL_CHOICE_LABEL = 'None'
-FILTERS_NULL_CHOICE_VALUE = '0'  # Must be a string
+#
 
+FILTERS_NULL_CHOICE_LABEL = 'None'
+FILTERS_NULL_CHOICE_VALUE = 'null'
+
+
+#
 # Django REST framework (API)
+#
+
 REST_FRAMEWORK_VERSION = VERSION[0:3]  # Use major.minor as API version
 REST_FRAMEWORK = {
     'ALLOWED_VERSIONS': [REST_FRAMEWORK_VERSION],
@@ -266,14 +497,86 @@ REST_FRAMEWORK = {
     'VIEW_NAME_FUNCTION': 'netbox.api.get_view_name',
 }
 
+
+#
+# drf_yasg (OpenAPI/Swagger)
+#
+
+SWAGGER_SETTINGS = {
+    'DEFAULT_AUTO_SCHEMA_CLASS': 'utilities.custom_inspectors.NetBoxSwaggerAutoSchema',
+    'DEFAULT_FIELD_INSPECTORS': [
+        'utilities.custom_inspectors.NullableBooleanFieldInspector',
+        'utilities.custom_inspectors.CustomChoiceFieldInspector',
+        'utilities.custom_inspectors.TagListFieldInspector',
+        'utilities.custom_inspectors.SerializedPKRelatedFieldInspector',
+        'drf_yasg.inspectors.CamelCaseJSONFilter',
+        'drf_yasg.inspectors.ReferencingSerializerInspector',
+        'drf_yasg.inspectors.RelatedFieldInspector',
+        'drf_yasg.inspectors.ChoiceFieldInspector',
+        'drf_yasg.inspectors.FileFieldInspector',
+        'drf_yasg.inspectors.DictFieldInspector',
+        'drf_yasg.inspectors.SerializerMethodFieldInspector',
+        'drf_yasg.inspectors.SimpleFieldInspector',
+        'drf_yasg.inspectors.StringDefaultFieldInspector',
+    ],
+    'DEFAULT_FILTER_INSPECTORS': [
+        'utilities.custom_inspectors.IdInFilterInspector',
+        'drf_yasg.inspectors.CoreAPICompatInspector',
+    ],
+    'DEFAULT_MODEL_DEPTH': 1,
+    'DEFAULT_PAGINATOR_INSPECTORS': [
+        'utilities.custom_inspectors.NullablePaginatorInspector',
+        'drf_yasg.inspectors.DjangoRestResponsePagination',
+        'drf_yasg.inspectors.CoreAPICompatInspector',
+    ],
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+        }
+    },
+    'VALIDATOR_URL': None,
+}
+
+
+#
+# Django RQ (Webhooks backend)
+#
+
+RQ_QUEUES = {
+    'default': {
+        'HOST': REDIS_HOST,
+        'PORT': REDIS_PORT,
+        'DB': REDIS_DATABASE,
+        'PASSWORD': REDIS_PASSWORD,
+        'DEFAULT_TIMEOUT': REDIS_DEFAULT_TIMEOUT,
+        'SSL': REDIS_SSL,
+    }
+}
+
+
+#
 # Django debug toolbar
+#
+
 INTERNAL_IPS = (
     '127.0.0.1',
     '::1',
 )
 
 
-try:
-    HOSTNAME = socket.gethostname()
-except:
-    HOSTNAME = 'localhost'
+#
+# NetBox internal settings
+#
+
+# Secrets
+SECRETS_MIN_PUBKEY_SIZE = 2048
+
+# Pagination
+PER_PAGE_DEFAULTS = [
+    25, 50, 100, 250, 500, 1000
+]
+if PAGINATE_COUNT not in PER_PAGE_DEFAULTS:
+    PER_PAGE_DEFAULTS.append(PAGINATE_COUNT)
+    PER_PAGE_DEFAULTS = sorted(PER_PAGE_DEFAULTS)

@@ -70,84 +70,78 @@
     "model": "dcim.devicetype",
     "pk": 1,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 1,
         "model": "MX960",
         "slug": "mx960",
         "u_height": 16,
-        "is_full_depth": true,
-        "is_console_server": false,
-        "is_pdu": false,
-        "is_network_device": true
+        "is_full_depth": true
     }
 },
 {
     "model": "dcim.devicetype",
     "pk": 2,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 1,
         "model": "EX9214",
         "slug": "ex9214",
         "u_height": 16,
-        "is_full_depth": true,
-        "is_console_server": false,
-        "is_pdu": false,
-        "is_network_device": true
+        "is_full_depth": true
     }
 },
 {
     "model": "dcim.devicetype",
     "pk": 3,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 1,
         "model": "QFX5100-24Q",
         "slug": "qfx5100-24q",
         "u_height": 1,
-        "is_full_depth": true,
-        "is_console_server": false,
-        "is_pdu": false,
-        "is_network_device": true
+        "is_full_depth": true
     }
 },
 {
     "model": "dcim.devicetype",
     "pk": 4,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 1,
         "model": "QFX5100-48S",
         "slug": "qfx5100-48s",
         "u_height": 1,
-        "is_full_depth": true,
-        "is_console_server": false,
-        "is_pdu": false,
-        "is_network_device": true
+        "is_full_depth": true
     }
 },
 {
     "model": "dcim.devicetype",
     "pk": 5,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 2,
         "model": "CM4148",
         "slug": "cm4148",
         "u_height": 1,
-        "is_full_depth": true,
-        "is_console_server": true,
-        "is_pdu": false,
-        "is_network_device": false
+        "is_full_depth": true
     }
 },
 {
     "model": "dcim.devicetype",
     "pk": 6,
     "fields": {
+        "created": "2016-06-23",
+        "last_updated": "2016-06-23T03:19:56.521Z",
         "manufacturer": 3,
         "model": "CWG-24VYM415C9",
         "slug": "cwg-24vym415c9",
         "u_height": 0,
-        "is_full_depth": false,
-        "is_console_server": false,
-        "is_pdu": true,
-        "is_network_device": false
+        "is_full_depth": false
     }
 },
 {
@@ -908,7 +902,7 @@
     "fields": {
         "device_type": 1,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true
     }
 },
@@ -918,7 +912,7 @@
     "fields": {
         "device_type": 1,
         "name": "fxp0 (RE1)",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true
     }
 },
@@ -928,7 +922,7 @@
     "fields": {
         "device_type": 1,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false
     }
 },
@@ -938,7 +932,7 @@
     "fields": {
         "device_type": 2,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true
     }
 },
@@ -948,7 +942,7 @@
     "fields": {
         "device_type": 2,
         "name": "fxp0 (RE1)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true
     }
 },
@@ -958,7 +952,7 @@
     "fields": {
         "device_type": 2,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false
     }
 },
@@ -968,7 +962,7 @@
     "fields": {
         "device_type": 3,
         "name": "em0",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true
     }
 },
@@ -978,7 +972,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -988,7 +982,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -998,7 +992,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1008,7 +1002,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1018,7 +1012,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/4",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1028,7 +1022,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/5",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1038,7 +1032,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/6",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1048,7 +1042,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/7",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1058,7 +1052,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/8",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1068,7 +1062,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/9",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1078,7 +1072,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/10",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1088,7 +1082,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/11",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1098,7 +1092,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/12",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1108,7 +1102,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/13",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1118,7 +1112,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/14",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1128,7 +1122,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/15",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1138,7 +1132,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/16",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1148,7 +1142,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/17",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1158,7 +1152,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/18",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1168,7 +1162,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/19",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1178,7 +1172,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/20",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1188,7 +1182,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/21",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1198,7 +1192,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/0/22",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1208,7 +1202,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/1/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1218,7 +1212,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/1/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1228,7 +1222,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/1/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1238,7 +1232,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/1/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1248,7 +1242,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/2/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1258,7 +1252,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/2/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1268,7 +1262,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/2/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1278,7 +1272,7 @@
     "fields": {
         "device_type": 3,
         "name": "et-0/2/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1288,7 +1282,7 @@
     "fields": {
         "device_type": 4,
         "name": "em0",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true
     }
 },
@@ -1298,7 +1292,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1308,7 +1302,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1318,7 +1312,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1328,7 +1322,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1338,7 +1332,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1348,7 +1342,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1358,7 +1352,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/6",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1368,7 +1362,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/7",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1378,7 +1372,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/8",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1388,7 +1382,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/9",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1398,7 +1392,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/10",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1408,7 +1402,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/11",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1418,7 +1412,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/12",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1428,7 +1422,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/13",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1438,7 +1432,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/14",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1448,7 +1442,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/15",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1458,7 +1452,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/16",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1468,7 +1462,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/17",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1478,7 +1472,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/18",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1488,7 +1482,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/19",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1498,7 +1492,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/20",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1508,7 +1502,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/21",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1518,7 +1512,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/22",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1528,7 +1522,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/23",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1538,7 +1532,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/24",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1548,7 +1542,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/25",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1558,7 +1552,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/26",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1568,7 +1562,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/27",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1578,7 +1572,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/28",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1588,7 +1582,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/29",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1598,7 +1592,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/30",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1608,7 +1602,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/31",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1618,7 +1612,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/32",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1628,7 +1622,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/33",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1638,7 +1632,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/34",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1648,7 +1642,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/35",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1658,7 +1652,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/36",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1668,7 +1662,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/37",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1678,7 +1672,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/38",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1688,7 +1682,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/39",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1698,7 +1692,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/40",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1708,7 +1702,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/41",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1718,7 +1712,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/42",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1728,7 +1722,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/43",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1738,7 +1732,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/44",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1748,7 +1742,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/45",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1758,7 +1752,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/46",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1768,7 +1762,7 @@
     "fields": {
         "device_type": 4,
         "name": "xe-0/0/47",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false
     }
 },
@@ -1778,7 +1772,7 @@
     "fields": {
         "device_type": 4,
         "name": "et-0/0/48",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1788,7 +1782,7 @@
     "fields": {
         "device_type": 4,
         "name": "et-0/0/49",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1798,7 +1792,7 @@
     "fields": {
         "device_type": 4,
         "name": "et-0/0/50",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1808,7 +1802,7 @@
     "fields": {
         "device_type": 4,
         "name": "et-0/0/51",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false
     }
 },
@@ -1818,7 +1812,7 @@
     "fields": {
         "device_type": 5,
         "name": "eth0",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true
     }
 },
@@ -1828,7 +1822,7 @@
     "fields": {
         "device_type": 6,
         "name": "Net",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true
     }
 },
@@ -1891,8 +1885,7 @@
     "pk": 1,
     "fields": {
         "name": "Juniper Junos",
-        "slug": "juniper-junos",
-        "rpc_client": "juniper-junos"
+        "slug": "juniper-junos"
     }
 },
 {
@@ -1900,8 +1893,7 @@
     "pk": 2,
     "fields": {
         "name": "Opengear",
-        "slug": "opengear",
-        "rpc_client": "opengear"
+        "slug": "opengear"
     }
 },
 {
@@ -2141,7 +2133,7 @@
     "fields": {
         "device": 1,
         "name": "Console (RE0)",
-        "cs_port": 27,
+        "connected_endpoint": 27,
         "connection_status": true
     }
 },
@@ -2151,7 +2143,7 @@
     "fields": {
         "device": 1,
         "name": "Console (RE1)",
-        "cs_port": 38,
+        "connected_endpoint": 38,
         "connection_status": true
     }
 },
@@ -2161,7 +2153,7 @@
     "fields": {
         "device": 2,
         "name": "Console (RE0)",
-        "cs_port": 5,
+        "connected_endpoint": 5,
         "connection_status": true
     }
 },
@@ -2171,7 +2163,7 @@
     "fields": {
         "device": 2,
         "name": "Console (RE1)",
-        "cs_port": 16,
+        "connected_endpoint": 16,
         "connection_status": true
     }
 },
@@ -2181,7 +2173,7 @@
     "fields": {
         "device": 3,
         "name": "Console",
-        "cs_port": 49,
+        "connected_endpoint": 49,
         "connection_status": true
     }
 },
@@ -2191,7 +2183,7 @@
     "fields": {
         "device": 4,
         "name": "Console",
-        "cs_port": 48,
+        "connected_endpoint": 48,
         "connection_status": true
     }
 },
@@ -2201,7 +2193,7 @@
     "fields": {
         "device": 5,
         "name": "Console",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2211,7 +2203,7 @@
     "fields": {
         "device": 6,
         "name": "Console",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2221,7 +2213,7 @@
     "fields": {
         "device": 7,
         "name": "Console (RE0)",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2231,7 +2223,7 @@
     "fields": {
         "device": 7,
         "name": "Console (RE1)",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2241,7 +2233,7 @@
     "fields": {
         "device": 8,
         "name": "Console (RE0)",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2251,7 +2243,7 @@
     "fields": {
         "device": 8,
         "name": "Console (RE1)",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2261,7 +2253,7 @@
     "fields": {
         "device": 9,
         "name": "Console",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2271,7 +2263,7 @@
     "fields": {
         "device": 11,
         "name": "Serial",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2281,7 +2273,7 @@
     "fields": {
         "device": 12,
         "name": "Serial",
-        "cs_port": null,
+        "connected_endpoint": null,
         "connection_status": true
     }
 },
@@ -2675,7 +2667,7 @@
     "fields": {
         "device": 1,
         "name": "PEM0",
-        "power_outlet": 25,
+        "_connected_poweroutlet": 25,
         "connection_status": true
     }
 },
@@ -2685,7 +2677,7 @@
     "fields": {
         "device": 1,
         "name": "PEM1",
-        "power_outlet": 49,
+        "_connected_poweroutlet": 49,
         "connection_status": true
     }
 },
@@ -2695,7 +2687,7 @@
     "fields": {
         "device": 1,
         "name": "PEM2",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2705,7 +2697,7 @@
     "fields": {
         "device": 1,
         "name": "PEM3",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2715,7 +2707,7 @@
     "fields": {
         "device": 2,
         "name": "PEM0",
-        "power_outlet": 26,
+        "_connected_poweroutlet": 26,
         "connection_status": true
     }
 },
@@ -2725,7 +2717,7 @@
     "fields": {
         "device": 2,
         "name": "PEM1",
-        "power_outlet": 50,
+        "_connected_poweroutlet": 50,
         "connection_status": true
     }
 },
@@ -2735,7 +2727,7 @@
     "fields": {
         "device": 2,
         "name": "PEM2",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2745,7 +2737,7 @@
     "fields": {
         "device": 2,
         "name": "PEM3",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2755,7 +2747,7 @@
     "fields": {
         "device": 4,
         "name": "PSU0",
-        "power_outlet": 28,
+        "_connected_poweroutlet": 28,
         "connection_status": true
     }
 },
@@ -2765,7 +2757,7 @@
     "fields": {
         "device": 4,
         "name": "PSU1",
-        "power_outlet": 52,
+        "_connected_poweroutlet": 52,
         "connection_status": true
     }
 },
@@ -2775,7 +2767,7 @@
     "fields": {
         "device": 5,
         "name": "PSU0",
-        "power_outlet": 56,
+        "_connected_poweroutlet": 56,
         "connection_status": true
     }
 },
@@ -2785,7 +2777,7 @@
     "fields": {
         "device": 5,
         "name": "PSU1",
-        "power_outlet": 32,
+        "_connected_poweroutlet": 32,
         "connection_status": true
     }
 },
@@ -2795,7 +2787,7 @@
     "fields": {
         "device": 3,
         "name": "PSU0",
-        "power_outlet": 27,
+        "_connected_poweroutlet": 27,
         "connection_status": true
     }
 },
@@ -2805,7 +2797,7 @@
     "fields": {
         "device": 3,
         "name": "PSU1",
-        "power_outlet": 51,
+        "_connected_poweroutlet": 51,
         "connection_status": true
     }
 },
@@ -2815,7 +2807,7 @@
     "fields": {
         "device": 7,
         "name": "PEM0",
-        "power_outlet": 53,
+        "_connected_poweroutlet": 53,
         "connection_status": true
     }
 },
@@ -2825,7 +2817,7 @@
     "fields": {
         "device": 7,
         "name": "PEM1",
-        "power_outlet": 29,
+        "_connected_poweroutlet": 29,
         "connection_status": true
     }
 },
@@ -2835,7 +2827,7 @@
     "fields": {
         "device": 7,
         "name": "PEM2",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2845,7 +2837,7 @@
     "fields": {
         "device": 7,
         "name": "PEM3",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2855,7 +2847,7 @@
     "fields": {
         "device": 8,
         "name": "PEM0",
-        "power_outlet": 54,
+        "_connected_poweroutlet": 54,
         "connection_status": true
     }
 },
@@ -2865,7 +2857,7 @@
     "fields": {
         "device": 8,
         "name": "PEM1",
-        "power_outlet": 30,
+        "_connected_poweroutlet": 30,
         "connection_status": true
     }
 },
@@ -2875,7 +2867,7 @@
     "fields": {
         "device": 8,
         "name": "PEM2",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2885,7 +2877,7 @@
     "fields": {
         "device": 8,
         "name": "PEM3",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -2895,7 +2887,7 @@
     "fields": {
         "device": 6,
         "name": "PSU0",
-        "power_outlet": 55,
+        "_connected_poweroutlet": 55,
         "connection_status": true
     }
 },
@@ -2905,7 +2897,7 @@
     "fields": {
         "device": 6,
         "name": "PSU1",
-        "power_outlet": 31,
+        "_connected_poweroutlet": 31,
         "connection_status": true
     }
 },
@@ -2915,7 +2907,7 @@
     "fields": {
         "device": 9,
         "name": "PSU",
-        "power_outlet": null,
+        "_connected_poweroutlet": null,
         "connection_status": true
     }
 },
@@ -3309,7 +3301,7 @@
     "fields": {
         "device": 1,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -3320,7 +3312,7 @@
     "fields": {
         "device": 1,
         "name": "fxp0 (RE1)",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
     }
@@ -3331,7 +3323,7 @@
     "fields": {
         "device": 1,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false,
         "description": ""
     }
@@ -3342,7 +3334,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": "TEST"
     }
@@ -3353,7 +3345,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3364,7 +3356,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3375,7 +3367,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3386,7 +3378,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3397,7 +3389,7 @@
     "fields": {
         "device": 1,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3408,7 +3400,7 @@
     "fields": {
         "device": 2,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -3419,7 +3411,7 @@
     "fields": {
         "device": 2,
         "name": "fxp0 (RE1)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -3430,7 +3422,7 @@
     "fields": {
         "device": 2,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false,
         "description": ""
     }
@@ -3442,7 +3434,7 @@
         "device": 3,
         "name": "em0",
         "mac_address": "00-00-00-AA-BB-CC",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
     }
@@ -3453,7 +3445,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3464,7 +3456,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3475,7 +3467,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/10",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3486,7 +3478,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/11",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3497,7 +3489,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/12",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3508,7 +3500,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/13",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3519,7 +3511,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/14",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3530,7 +3522,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/15",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3541,7 +3533,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/16",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3552,7 +3544,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/17",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3563,7 +3555,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/18",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3574,7 +3566,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/19",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3585,7 +3577,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3596,7 +3588,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/20",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3607,7 +3599,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/21",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3618,7 +3610,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/22",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3629,7 +3621,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3640,7 +3632,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/4",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3651,7 +3643,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/5",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3662,7 +3654,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/6",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3673,7 +3665,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/7",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3684,7 +3676,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/8",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3695,7 +3687,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/0/9",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3706,7 +3698,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/1/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3717,7 +3709,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/1/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3728,7 +3720,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/1/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3739,7 +3731,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/1/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3750,7 +3742,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/2/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3761,7 +3753,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/2/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3772,7 +3764,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/2/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3783,7 +3775,7 @@
     "fields": {
         "device": 3,
         "name": "et-0/2/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3794,7 +3786,7 @@
     "fields": {
         "device": 4,
         "name": "em0",
-        "form_factor": 1000,
+        "type": 1000,
         "mac_address": "ff-ee-dd-33-22-11",
         "mgmt_only": true,
         "description": ""
@@ -3806,7 +3798,7 @@
     "fields": {
         "device": 4,
         "name": "et-0/0/48",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3817,7 +3809,7 @@
     "fields": {
         "device": 4,
         "name": "et-0/0/49",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3828,7 +3820,7 @@
     "fields": {
         "device": 4,
         "name": "et-0/0/50",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3839,7 +3831,7 @@
     "fields": {
         "device": 4,
         "name": "et-0/0/51",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -3850,7 +3842,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3861,7 +3853,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3872,7 +3864,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/10",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3883,7 +3875,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/11",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3894,7 +3886,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/12",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3905,7 +3897,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/13",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3916,7 +3908,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/14",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3927,7 +3919,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/15",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3938,7 +3930,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/16",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3949,7 +3941,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/17",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3960,7 +3952,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/18",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3971,7 +3963,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/19",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3982,7 +3974,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -3993,7 +3985,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/20",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4004,7 +3996,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/21",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4015,7 +4007,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/22",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4026,7 +4018,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/23",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4037,7 +4029,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/24",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4048,7 +4040,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/25",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4059,7 +4051,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/26",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4070,7 +4062,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/27",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4081,7 +4073,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/28",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4092,7 +4084,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/29",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4103,7 +4095,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4114,7 +4106,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/30",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4125,7 +4117,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/31",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4136,7 +4128,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/32",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4147,7 +4139,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/33",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4158,7 +4150,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/34",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4169,7 +4161,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/35",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4180,7 +4172,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/36",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4191,7 +4183,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/37",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4202,7 +4194,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/38",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4213,7 +4205,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/39",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4224,7 +4216,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4235,7 +4227,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/40",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4246,7 +4238,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/41",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4257,7 +4249,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/42",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4268,7 +4260,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/43",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4279,7 +4271,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/44",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4290,7 +4282,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/45",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4301,7 +4293,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/46",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4312,7 +4304,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/47",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4323,7 +4315,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4334,7 +4326,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/6",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4345,7 +4337,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/7",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4356,7 +4348,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/8",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4367,7 +4359,7 @@
     "fields": {
         "device": 4,
         "name": "xe-0/0/9",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4378,7 +4370,7 @@
     "fields": {
         "device": 5,
         "name": "em0",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -4389,7 +4381,7 @@
     "fields": {
         "device": 5,
         "name": "et-0/0/48",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4400,7 +4392,7 @@
     "fields": {
         "device": 5,
         "name": "et-0/0/49",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4411,7 +4403,7 @@
     "fields": {
         "device": 5,
         "name": "et-0/0/50",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4422,7 +4414,7 @@
     "fields": {
         "device": 5,
         "name": "et-0/0/51",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4433,7 +4425,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4444,7 +4436,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4455,7 +4447,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/10",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4466,7 +4458,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/11",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4477,7 +4469,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/12",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4488,7 +4480,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/13",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4499,7 +4491,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/14",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4510,7 +4502,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/15",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4521,7 +4513,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/16",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4532,7 +4524,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/17",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4543,7 +4535,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/18",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4554,7 +4546,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/19",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4565,7 +4557,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4576,7 +4568,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/20",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4587,7 +4579,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/21",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4598,7 +4590,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/22",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4609,7 +4601,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/23",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4620,7 +4612,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/24",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4631,7 +4623,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/25",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4642,7 +4634,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/26",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4653,7 +4645,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/27",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4664,7 +4656,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/28",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4675,7 +4667,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/29",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4686,7 +4678,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4697,7 +4689,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/30",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4708,7 +4700,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/31",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4719,7 +4711,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/32",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4730,7 +4722,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/33",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4741,7 +4733,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/34",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4752,7 +4744,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/35",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4763,7 +4755,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/36",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4774,7 +4766,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/37",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4785,7 +4777,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/38",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4796,7 +4788,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/39",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4807,7 +4799,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4818,7 +4810,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/40",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4829,7 +4821,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/41",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4840,7 +4832,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/42",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4851,7 +4843,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/43",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4862,7 +4854,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/44",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4873,7 +4865,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/45",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4884,7 +4876,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/46",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4895,7 +4887,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/47",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4906,7 +4898,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4917,7 +4909,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/6",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4928,7 +4920,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/7",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4939,7 +4931,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/8",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4950,7 +4942,7 @@
     "fields": {
         "device": 5,
         "name": "xe-0/0/9",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -4961,7 +4953,7 @@
     "fields": {
         "device": 6,
         "name": "em0",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
     }
@@ -4972,7 +4964,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4983,7 +4975,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -4994,7 +4986,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/10",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5005,7 +4997,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/11",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5016,7 +5008,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/12",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5027,7 +5019,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/13",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5038,7 +5030,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/14",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5049,7 +5041,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/15",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5060,7 +5052,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/16",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5071,7 +5063,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/17",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5082,7 +5074,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/18",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5093,7 +5085,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/19",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5104,7 +5096,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5115,7 +5107,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/20",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5126,7 +5118,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/21",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5137,7 +5129,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/22",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5148,7 +5140,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5159,7 +5151,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/4",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5170,7 +5162,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/5",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5181,7 +5173,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/6",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5192,7 +5184,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/7",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5203,7 +5195,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/8",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5214,7 +5206,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/0/9",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5225,7 +5217,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/1/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5236,7 +5228,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/1/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5247,7 +5239,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/1/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5258,7 +5250,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/1/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5269,7 +5261,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/2/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5280,7 +5272,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/2/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5291,7 +5283,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/2/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5302,7 +5294,7 @@
     "fields": {
         "device": 6,
         "name": "et-0/2/3",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5313,7 +5305,7 @@
     "fields": {
         "device": 7,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -5324,7 +5316,7 @@
     "fields": {
         "device": 7,
         "name": "fxp0 (RE1)",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
     }
@@ -5335,7 +5327,7 @@
     "fields": {
         "device": 7,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false,
         "description": ""
     }
@@ -5346,7 +5338,7 @@
     "fields": {
         "device": 8,
         "name": "fxp0 (RE0)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -5357,7 +5349,7 @@
     "fields": {
         "device": 8,
         "name": "fxp0 (RE1)",
-        "form_factor": 1000,
+        "type": 1000,
         "mgmt_only": true,
         "description": ""
     }
@@ -5368,7 +5360,7 @@
     "fields": {
         "device": 8,
         "name": "lo0",
-        "form_factor": 0,
+        "type": 0,
         "mgmt_only": false,
         "description": ""
     }
@@ -5379,7 +5371,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/0/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5390,7 +5382,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/0/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5401,7 +5393,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/0/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5412,7 +5404,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/1/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5423,7 +5415,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/1/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5434,7 +5426,7 @@
     "fields": {
         "device": 2,
         "name": "et-0/1/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5445,7 +5437,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/0/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5456,7 +5448,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/0/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5467,7 +5459,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/0/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5478,7 +5470,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/1/0",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5489,7 +5481,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/1/1",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5500,7 +5492,7 @@
     "fields": {
         "device": 8,
         "name": "et-0/1/2",
-        "form_factor": 1400,
+        "type": 1400,
         "mgmt_only": false,
         "description": ""
     }
@@ -5511,7 +5503,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5522,7 +5514,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5533,7 +5525,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5544,7 +5536,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5555,7 +5547,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5566,7 +5558,7 @@
     "fields": {
         "device": 2,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5577,7 +5569,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5588,7 +5580,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5599,7 +5591,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5610,7 +5602,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5621,7 +5613,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5632,7 +5624,7 @@
     "fields": {
         "device": 8,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5643,7 +5635,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/0",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5654,7 +5646,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/1",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5665,7 +5657,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/2",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5676,7 +5668,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/3",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5687,7 +5679,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/4",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5698,7 +5690,7 @@
     "fields": {
         "device": 7,
         "name": "xe-0/0/5",
-        "form_factor": 1200,
+        "type": 1200,
         "mgmt_only": false,
         "description": ""
     }
@@ -5709,7 +5701,7 @@
     "fields": {
         "device": 9,
         "name": "eth0",
-        "form_factor": 1000,
+        "type": 1000,
         "mac_address": "44-55-66-77-88-99",
         "mgmt_only": true,
         "description": ""
@@ -5721,7 +5713,7 @@
     "fields": {
         "device": 11,
         "name": "Net",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
     }
@@ -5732,162 +5724,9 @@
     "fields": {
         "device": 12,
         "name": "Net",
-        "form_factor": 800,
+        "type": 800,
         "mgmt_only": true,
         "description": ""
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 3,
-    "fields": {
-        "interface_a": 99,
-        "interface_b": 15,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 4,
-    "fields": {
-        "interface_a": 100,
-        "interface_b": 153,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 5,
-    "fields": {
-        "interface_a": 46,
-        "interface_b": 14,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 6,
-    "fields": {
-        "interface_a": 47,
-        "interface_b": 152,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 7,
-    "fields": {
-        "interface_a": 91,
-        "interface_b": 144,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 8,
-    "fields": {
-        "interface_a": 92,
-        "interface_b": 145,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 16,
-    "fields": {
-        "interface_a": 189,
-        "interface_b": 37,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 17,
-    "fields": {
-        "interface_a": 192,
-        "interface_b": 175,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 18,
-    "fields": {
-        "interface_a": 195,
-        "interface_b": 41,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 19,
-    "fields": {
-        "interface_a": 198,
-        "interface_b": 179,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 20,
-    "fields": {
-        "interface_a": 191,
-        "interface_b": 197,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 21,
-    "fields": {
-        "interface_a": 194,
-        "interface_b": 200,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 22,
-    "fields": {
-        "interface_a": 9,
-        "interface_b": 218,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 23,
-    "fields": {
-        "interface_a": 8,
-        "interface_b": 206,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 24,
-    "fields": {
-        "interface_a": 7,
-        "interface_b": 212,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 25,
-    "fields": {
-        "interface_a": 217,
-        "interface_b": 205,
-        "connection_status": true
-    }
-},
-{
-    "model": "dcim.interfaceconnection",
-    "pk": 26,
-    "fields": {
-        "interface_a": 216,
-        "interface_b": 211,
-        "connection_status": true
     }
 }
 ]

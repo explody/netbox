@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from django.db.models import Lookup, Transform, IntegerField
 from django.db.models import lookups
 
@@ -13,12 +11,21 @@ class NetFieldDecoratorMixin(object):
         return lhs_string, lhs_params
 
 
+class IExact(NetFieldDecoratorMixin, lookups.IExact):
+
+    def get_rhs_op(self, connection, rhs):
+        return '= LOWER(%s)' % rhs
+
+
 class EndsWith(NetFieldDecoratorMixin, lookups.EndsWith):
-    lookup_name = 'endswith'
+    pass
 
 
 class IEndsWith(NetFieldDecoratorMixin, lookups.IEndsWith):
-    lookup_name = 'iendswith'
+    pass
+
+    def get_rhs_op(self, connection, rhs):
+        return 'LIKE LOWER(%s)' % rhs
 
 
 class StartsWith(NetFieldDecoratorMixin, lookups.StartsWith):
@@ -26,15 +33,18 @@ class StartsWith(NetFieldDecoratorMixin, lookups.StartsWith):
 
 
 class IStartsWith(NetFieldDecoratorMixin, lookups.IStartsWith):
-    lookup_name = 'istartswith'
+    pass
+
+    def get_rhs_op(self, connection, rhs):
+        return 'LIKE LOWER(%s)' % rhs
 
 
 class Regex(NetFieldDecoratorMixin, lookups.Regex):
-    lookup_name = 'regex'
+    pass
 
 
 class IRegex(NetFieldDecoratorMixin, lookups.IRegex):
-    lookup_name = 'iregex'
+    pass
 
 
 class NetContainsOrEquals(Lookup):

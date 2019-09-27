@@ -25,6 +25,17 @@ DATABASE = {
 # https://docs.djangoproject.com/en/dev/ref/settings/#std:setting-SECRET_KEY
 SECRET_KEY = ''
 
+# Redis database settings. The Redis database is used for caching and background processing such as webhooks
+REDIS = {
+    'HOST': 'localhost',
+    'PORT': 6379,
+    'PASSWORD': '',
+    'DATABASE': 0,
+    'CACHE_DATABASE': 1,
+    'DEFAULT_TIMEOUT': 300,
+    'SSL': False,
+}
+
 
 #########################
 #                       #
@@ -50,12 +61,18 @@ BANNER_LOGIN = ''
 # BASE_PATH = 'netbox/'
 BASE_PATH = ''
 
+# Cache timeout in seconds. Set to 0 to dissable caching. Defaults to 900 (15 minutes)
+CACHE_TIMEOUT = 900
+
+# Maximum number of days to retain logged changes. Set to 0 to retain changes indefinitely. (Default: 90)
+CHANGELOG_RETENTION = 90
+
 # API Cross-Origin Resource Sharing (CORS) settings. If CORS_ORIGIN_ALLOW_ALL is set to True, all origins will be
 # allowed. Otherwise, define a list of allowed origins using either CORS_ORIGIN_WHITELIST or
 # CORS_ORIGIN_REGEX_WHITELIST. For more information, see https://github.com/ottoyiu/django-cors-headers
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = [
-    # 'hostname.example.com',
+    # 'https://hostname.example.com',
 ]
 CORS_ORIGIN_REGEX_WHITELIST = [
     # r'^(https?://)?(\w+\.)?example\.com$',
@@ -80,6 +97,14 @@ EMAIL = {
 # (all prefixes and IP addresses not assigned to a VRF), set ENFORCE_GLOBAL_UNIQUE to True.
 ENFORCE_GLOBAL_UNIQUE = False
 
+# Exempt certain models from the enforcement of view permissions. Models listed here will be viewable by all users and
+# by anonymous users. List models in the form `<app>.<model>`. Add '*' to this list to exempt all models.
+EXEMPT_VIEW_PERMISSIONS = [
+    # 'dcim.site',
+    # 'dcim.region',
+    # 'ipam.prefix',
+]
+
 # Enable custom logging. Please see the Django documentation for detailed guidance on configuring custom logs:
 #   https://docs.djangoproject.com/en/1.11/topics/logging/
 LOGGING = {}
@@ -87,6 +112,10 @@ LOGGING = {}
 # Setting this to True will permit only authenticated users to access any part of NetBox. By default, anonymous users
 # are permitted to access most data in NetBox (excluding secrets) but not make any changes.
 LOGIN_REQUIRED = False
+
+# The length of time (in seconds) for which a user will remain logged into the web UI before being prompted to
+# re-authenticate. (Default: 1209600 [14 days])
+LOGIN_TIMEOUT = None
 
 # Setting this to True will display a "maintenance mode" banner at the top of every page.
 MAINTENANCE_MODE = False
@@ -99,6 +128,9 @@ MAX_PAGE_SIZE = 1000
 # The file path where uploaded media such as image attachments are stored. A trailing slash is not needed. Note that
 # the default value of this setting is derived from the installed location.
 # MEDIA_ROOT = '/opt/netbox/netbox/media'
+
+# Expose Prometheus monitoring metrics at the HTTP endpoint '/metrics'
+METRICS_ENABLED = False
 
 # Credentials that NetBox will uses to authenticate to devices when connecting via NAPALM.
 NAPALM_USERNAME = ''
@@ -122,8 +154,17 @@ PREFER_IPV4 = False
 # this setting is derived from the installed location.
 # REPORTS_ROOT = '/opt/netbox/netbox/reports'
 
+# By default, NetBox will store session data in the database. Alternatively, a file path can be specified here to use
+# local file storage instead. (This can be useful for enabling authentication on a standby instance with read-only
+# database access.) Note that the user as which NetBox runs must have read and write permissions to this path.
+SESSION_FILE_PATH = None
+
 # Time zone (default: UTC)
 TIME_ZONE = 'UTC'
+
+# The webhooks backend is disabled by default. Set this to True to enable it. Note that this requires a Redis
+# database be configured and accessible by NetBox.
+WEBHOOKS_ENABLED = False
 
 # Date/time formatting. See the following link for supported formats:
 # https://docs.djangoproject.com/en/dev/ref/templates/builtins/#date

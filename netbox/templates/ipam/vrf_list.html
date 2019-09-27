@@ -1,28 +1,22 @@
 {% extends '_base.html' %}
-{% load helpers %}
-{% load form_helpers %}
+{% load buttons %}
 
 {% block content %}
-<div class="pull-right">
+<div class="pull-right noprint">
     {% if perms.ipam.add_vrf %}
-		<a href="{% url 'ipam:vrf_add' %}" class="btn btn-primary">
-			<span class="fa fa-plus" aria-hidden="true"></span>
-			Add a VRF
-		</a>
-		<a href="{% url 'ipam:vrf_import' %}" class="btn btn-info">
-			<span class="fa fa-download" aria-hidden="true"></span>
-			Import VRFs
-		</a>
-	{% endif %}
-    {% include 'inc/export_button.html' with obj_type='VRFs' %}
+        {% add_button 'ipam:vrf_add' %}
+        {% import_button 'ipam:vrf_import' %}
+    {% endif %}
+    {% export_button content_type %}
 </div>
 <h1>{% block title %}VRFs{% endblock %}</h1>
 <div class="row">
 	<div class="col-md-9">
         {% include 'utilities/obj_table.html' with bulk_edit_url='ipam:vrf_bulk_edit' bulk_delete_url='ipam:vrf_bulk_delete' %}
 	</div>
-	<div class="col-md-3">
+	<div class="col-md-3 noprint">
 		{% include 'inc/search_panel.html' %}
+		{% include 'inc/tags_panel.html' %}
 	</div>
 </div>
 {% endblock %}

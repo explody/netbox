@@ -1,13 +1,12 @@
-from __future__ import unicode_literals
-
 from django.contrib import admin, messages
 from django.shortcuts import redirect, render
 
+from netbox.admin import admin_site
 from .forms import ActivateUserKeyForm
 from .models import UserKey
 
 
-@admin.register(UserKey)
+@admin.register(UserKey, site=admin_site)
 class UserKeyAdmin(admin.ModelAdmin):
     actions = ['activate_selected']
     list_display = ['user', 'is_filled', 'is_active', 'created']
@@ -22,7 +21,7 @@ class UserKeyAdmin(admin.ModelAdmin):
 
     def get_actions(self, request):
         # Bulk deletion is disabled at the manager level, so remove the action from the admin site for this model.
-        actions = super(UserKeyAdmin, self).get_actions(request)
+        actions = super().get_actions(request)
         if 'delete_selected' in actions:
             del actions['delete_selected']
         if not request.user.has_perm('secrets.activate_userkey'):

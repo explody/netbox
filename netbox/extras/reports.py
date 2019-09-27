@@ -1,8 +1,7 @@
-from __future__ import unicode_literals
-from collections import OrderedDict
 import importlib
 import inspect
 import pkgutil
+from collections import OrderedDict
 
 from django.conf import settings
 from django.utils import timezone
@@ -15,19 +14,26 @@ def is_report(obj):
     """
     Returns True if the given object is a Report.
     """
-    if obj in Report.__subclasses__():
-        return True
-    return False
+    return obj in Report.__subclasses__()
 
 
 def get_report(module_name, report_name):
     """
     Return a specific report from within a module.
     """
-    module = importlib.import_module('reports.{}'.format(module_name))
+    file_path = '{}/{}.py'.format(settings.REPORTS_ROOT, module_name)
+
+    spec = importlib.util.spec_from_file_location(module_name, file_path)
+    module = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(module)
+    except FileNotFoundError:
+        return None
+
     report = getattr(module, report_name, None)
     if report is None:
         return None
+
     return report()
 
 
@@ -45,8 +51,8 @@ def get_reports():
 
     # Iterate through all modules within the reports path. These are the user-created files in which reports are
     # defined.
-    for importer, module_name, is_pkg in pkgutil.walk_packages([settings.REPORTS_ROOT]):
-        module = importlib.import_module('reports.{}'.format(module_name))
+    for importer, module_name, _ in pkgutil.iter_modules([settings.REPORTS_ROOT]):
+        module = importer.find_module(module_name).load_module(module_name)
         report_list = [cls() for _, cls in inspect.getmembers(module, is_report)]
         module_list.append((module_name, report_list))
 
@@ -103,7 +109,7 @@ class Report(object):
 
     @property
     def module(self):
-        return self.__module__.rsplit('.', 1)[1]
+        return self.__module__
 
     @property
     def name(self):

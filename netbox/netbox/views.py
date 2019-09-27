@@ -1,21 +1,27 @@
-from __future__ import unicode_literals
 from collections import OrderedDict
-import sys
 
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
-
+from django.db.models import Count, F
 from django.shortcuts import render
 from django.views.generic import View
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
+from rest_framework.views import APIView
 
 from circuits.filters import CircuitFilter, ProviderFilter
 from circuits.models import Circuit, Provider
 from circuits.tables import CircuitTable, ProviderTable
-from dcim.filters import DeviceFilter, DeviceTypeFilter, RackFilter, SiteFilter
-from dcim.models import ConsolePort, Device, DeviceType, InterfaceConnection, PowerPort, Rack, Site
-from dcim.tables import DeviceDetailTable, DeviceTypeTable, RackTable, SiteTable
-from extras.models import TopologyMap, UserAction
+from dcim.filters import (
+    CableFilter, DeviceFilter, DeviceTypeFilter, PowerFeedFilter, RackFilter, RackGroupFilter, SiteFilter,
+    VirtualChassisFilter,
+)
+from dcim.models import (
+    Cable, ConsolePort, Device, DeviceType, Interface, PowerPanel, PowerFeed, PowerPort, Rack, RackGroup, Site, VirtualChassis
+)
+from dcim.tables import (
+    CableTable, DeviceDetailTable, DeviceTypeTable, PowerFeedTable, RackTable, RackGroupTable, SiteTable,
+    VirtualChassisTable,
+)
+from extras.models import ObjectChange, ReportResult, TopologyMap
 from ipam.filters import AggregateFilter, IPAddressFilter, PrefixFilter, VLANFilter, VRFFilter
 from ipam.models import Aggregate, IPAddress, Prefix, VLAN, VRF
 from ipam.tables import AggregateTable, IPAddressTable, PrefixTable, VLANTable, VRFTable
@@ -30,7 +36,6 @@ from virtualization.models import Cluster, VirtualMachine
 from virtualization.tables import ClusterTable, VirtualMachineDetailTable
 from .forms import SearchForm
 
-
 SEARCH_MAX_RESULTS = 15
 SEARCH_TYPES = OrderedDict((
     # Circuits
@@ -41,92 +46,116 @@ SEARCH_TYPES = OrderedDict((
         'url': 'circuits:provider_list',
     }),
     ('circuit', {
-        'queryset': Circuit.objects.select_related('type', 'provider', 'tenant').prefetch_related('terminations__site'),
+        'queryset': Circuit.objects.prefetch_related('type', 'provider', 'tenant').prefetch_related('terminations__site'),
         'filter': CircuitFilter,
         'table': CircuitTable,
         'url': 'circuits:circuit_list',
     }),
     # DCIM
     ('site', {
-        'queryset': Site.objects.select_related('region', 'tenant'),
+        'queryset': Site.objects.prefetch_related('region', 'tenant'),
         'filter': SiteFilter,
         'table': SiteTable,
         'url': 'dcim:site_list',
     }),
     ('rack', {
-        'queryset': Rack.objects.select_related('site', 'group', 'tenant', 'role'),
+        'queryset': Rack.objects.prefetch_related('site', 'group', 'tenant', 'role'),
         'filter': RackFilter,
         'table': RackTable,
         'url': 'dcim:rack_list',
     }),
+    ('rackgroup', {
+        'queryset': RackGroup.objects.prefetch_related('site').annotate(rack_count=Count('racks')),
+        'filter': RackGroupFilter,
+        'table': RackGroupTable,
+        'url': 'dcim:rackgroup_list',
+    }),
     ('devicetype', {
-        'queryset': DeviceType.objects.select_related('manufacturer'),
+        'queryset': DeviceType.objects.prefetch_related('manufacturer').annotate(instance_count=Count('instances')),
         'filter': DeviceTypeFilter,
         'table': DeviceTypeTable,
         'url': 'dcim:devicetype_list',
     }),
     ('device', {
-        'queryset': Device.objects.select_related(
+        'queryset': Device.objects.prefetch_related(
             'device_type__manufacturer', 'device_role', 'tenant', 'site', 'rack', 'primary_ip4', 'primary_ip6',
         ),
         'filter': DeviceFilter,
         'table': DeviceDetailTable,
         'url': 'dcim:device_list',
     }),
+    ('virtualchassis', {
+        'queryset': VirtualChassis.objects.prefetch_related('master').annotate(member_count=Count('members')),
+        'filter': VirtualChassisFilter,
+        'table': VirtualChassisTable,
+        'url': 'dcim:virtualchassis_list',
+    }),
+    ('cable', {
+        'queryset': Cable.objects.all(),
+        'filter': CableFilter,
+        'table': CableTable,
+        'url': 'dcim:cable_list',
+    }),
+    ('powerfeed', {
+        'queryset': PowerFeed.objects.all(),
+        'filter': PowerFeedFilter,
+        'table': PowerFeedTable,
+        'url': 'dcim:powerfeed_list',
+    }),
     # IPAM
     ('vrf', {
-        'queryset': VRF.objects.select_related('tenant'),
+        'queryset': VRF.objects.prefetch_related('tenant'),
         'filter': VRFFilter,
         'table': VRFTable,
         'url': 'ipam:vrf_list',
     }),
     ('aggregate', {
-        'queryset': Aggregate.objects.select_related('rir'),
+        'queryset': Aggregate.objects.prefetch_related('rir'),
         'filter': AggregateFilter,
         'table': AggregateTable,
         'url': 'ipam:aggregate_list',
     }),
     ('prefix', {
-        'queryset': Prefix.objects.select_related('site', 'vrf__tenant', 'tenant', 'vlan', 'role'),
+        'queryset': Prefix.objects.prefetch_related('site', 'vrf__tenant', 'tenant', 'vlan', 'role'),
         'filter': PrefixFilter,
         'table': PrefixTable,
         'url': 'ipam:prefix_list',
     }),
     ('ipaddress', {
-        'queryset': IPAddress.objects.select_related('vrf__tenant', 'tenant'),
+        'queryset': IPAddress.objects.prefetch_related('vrf__tenant', 'tenant'),
         'filter': IPAddressFilter,
         'table': IPAddressTable,
         'url': 'ipam:ipaddress_list',
     }),
     ('vlan', {
-        'queryset': VLAN.objects.select_related('site', 'group', 'tenant', 'role'),
+        'queryset': VLAN.objects.prefetch_related('site', 'group', 'tenant', 'role'),
         'filter': VLANFilter,
         'table': VLANTable,
         'url': 'ipam:vlan_list',
     }),
     # Secrets
     ('secret', {
-        'queryset': Secret.objects.select_related('role', 'device'),
+        'queryset': Secret.objects.prefetch_related('role', 'device'),
         'filter': SecretFilter,
         'table': SecretTable,
         'url': 'secrets:secret_list',
     }),
     # Tenancy
     ('tenant', {
-        'queryset': Tenant.objects.select_related('group'),
+        'queryset': Tenant.objects.prefetch_related('group'),
         'filter': TenantFilter,
         'table': TenantTable,
         'url': 'tenancy:tenant_list',
     }),
     # Virtualization
     ('cluster', {
-        'queryset': Cluster.objects.all(),
+        'queryset': Cluster.objects.prefetch_related('type', 'group'),
         'filter': ClusterFilter,
         'table': ClusterTable,
         'url': 'virtualization:cluster_list',
     }),
     ('virtualmachine', {
-        'queryset': VirtualMachine.objects.select_related(
+        'queryset': VirtualMachine.objects.prefetch_related(
             'cluster', 'tenant', 'platform', 'primary_ip4', 'primary_ip6',
         ),
         'filter': VirtualMachineFilter,
@@ -141,6 +170,18 @@ class HomeView(View):
 
     def get(self, request):
 
+        connected_consoleports = ConsolePort.objects.filter(
+            connected_endpoint__isnull=False
+        )
+        connected_powerports = PowerPort.objects.filter(
+            _connected_poweroutlet__isnull=False
+        )
+        connected_interfaces = Interface.objects.filter(
+            _connected_interface__isnull=False,
+            pk__lt=F('_connected_interface')
+        )
+        cables = Cable.objects.all()
+
         stats = {
 
             # Organization
@@ -149,10 +190,14 @@ class HomeView(View):
 
             # DCIM
             'rack_count': Rack.objects.count(),
+            'devicetype_count': DeviceType.objects.count(),
             'device_count': Device.objects.count(),
-            'interface_connections_count': InterfaceConnection.objects.count(),
-            'console_connections_count': ConsolePort.objects.filter(cs_port__isnull=False).count(),
-            'power_connections_count': PowerPort.objects.filter(power_outlet__isnull=False).count(),
+            'interface_connections_count': connected_interfaces.count(),
+            'cable_count': cables.count(),
+            'console_connections_count': connected_consoleports.count(),
+            'power_connections_count': connected_powerports.count(),
+            'powerpanel_count': PowerPanel.objects.count(),
+            'powerfeed_count': PowerFeed.objects.count(),
 
             # IPAM
             'vrf_count': VRF.objects.count(),
@@ -178,7 +223,8 @@ class HomeView(View):
             'search_form': SearchForm(),
             'stats': stats,
             'topology_maps': TopologyMap.objects.filter(site__isnull=True),
-            'recent_activity': UserAction.objects.select_related('user')[:50]
+            'report_results': ReportResult.objects.order_by('-created')[:10],
+            'changelog': ObjectChange.objects.prefetch_related('user', 'changed_object_type')[:50]
         })
 
 
@@ -232,6 +278,7 @@ class SearchView(View):
 class APIRootView(APIView):
     _ignore_model_permissions = True
     exclude_from_schema = True
+    swagger_schema = None
 
     def get_view_name(self):
         return "API Root"
