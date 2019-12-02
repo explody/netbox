@@ -80,7 +80,7 @@ if settings.METRICS_ENABLED:
 
 if settings.SAML_ENABLED:
     _patterns += [
-        url(r'^saml2/', include('djangosaml2.urls')),
+        path(r'saml2/', include('djangosaml2.urls')),
     ]
 
 # Prepend BASE_PATH
