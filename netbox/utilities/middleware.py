@@ -1,3 +1,5 @@
+from urllib import parse
+
 from django.conf import settings
 from django.db import ProgrammingError
 from django.http import Http404, HttpResponseRedirect
@@ -34,7 +36,7 @@ class LoginRequiredMiddleware(object):
                     return HttpResponseRedirect(
                         '{}?next={}'.format(
                             settings.LOGIN_URL,
-                            urllib.parse.quote(request.get_full_path_info())
+                            parse.quote(request.get_full_path_info())
                         )
                     )
 
